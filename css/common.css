@@ -1,0 +1,98 @@
+/* ============================================
+   红色文化数字基因库 · 公共样式
+   前台首页 / 详情页 / 管理后台 共用本文件
+   配色、字号、卡片样式统一在此修改
+   ============================================ */
+
+:root {
+  /* 主色（参考图深红标题栏） */
+  --main-red: #b3131b;
+  --main-red-dark: #8c0d14;
+  --gold: #d9a441;
+  /* 背景 */
+  --bg: #f7f3ec;
+  --card-bg: #ffffff;
+  --tag-bg: #fbe9ea;
+  --tag-text: #b3131b;
+  /* 文字 */
+  --text-main: #2b2b2b;
+  --text-sub: #7a7a7a;
+  /* 按钮 */
+  --btn-green: #2e9e5b;
+  --border: #e8e0d4;
+  /* 圆角与间距 */
+  --radius: 12px;
+  --radius-sm: 8px;
+  /* 字号 */
+  --font-title: 22px;
+  --font-subtitle: 16px;
+  --font-body: 14px;
+  --font-tag: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  font-size: var(--font-body);
+}
+
+/* 顶部导航栏（红底） */
+.top-bar {
+  background: linear-gradient(90deg, var(--main-red-dark), var(--main-red));
+  color: #fff;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.top-bar .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-title);
+  font-weight: bold;
+}
+.top-bar .nav { display: flex; gap: 28px; }
+.top-bar .nav a { color: #fff; text-decoration: none; font-size: var(--font-subtitle); }
+.top-bar .nav a.active {
+  background: rgba(255,255,255,.18);
+  border-radius: 20px;
+  padding: 6px 16px;
+}
+
+/* 通用卡片 */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  overflow: hidden;
+}
+
+/* 素材卡片 */
+.material-card { cursor: pointer; }
+.material-card .cover { width: 100%; height: 180px; object-fit: cover; }
+.material-card .info { padding: 12px 14px; }
+.material-card .title { font-size: var(--font-subtitle); font-weight: bold; margin-bottom: 8px; }
+.material-card .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.material-card .tag {
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: var(--font-tag);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+}
+.material-card .meta { color: var(--text-sub); font-size: var(--font-tag); display: flex; gap: 14px; }
+
+/* 按钮 */
+.btn { border: none; border-radius: var(--radius-sm); padding: 10px 20px; cursor: pointer; font-size: var(--font-body); }
+.btn-red { background: var(--main-red); color: #fff; }
+.btn-green { background: var(--btn-green); color: #fff; }
+.btn-gold { background: var(--gold); color: #fff; }
+
+/* 表格（后台素材管理） */
+.table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: var(--radius); overflow: hidden; }
+.table th { background: var(--main-red); color: #fff; padding: 12px; font-size: var(--font-body); }
+.table td { padding: 12px; border-bottom: 1px solid var(--border); }

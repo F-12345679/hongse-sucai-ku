@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>素材详情 · 红色文化数字基因库</title>
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body style="padding:24px 32px;max-width:900px;margin:0 auto;">
+  <p><a href="index.html" style="color:var(--main-red);text-decoration:none;">← 返回素材首页</a></p>
+  <div class="card" style="margin-top:16px;overflow:hidden;">
+    <img id="cover" style="width:100%;max-height:380px;object-fit:cover;" alt="">
+    <div style="padding:24px;">
+      <h1 id="title" style="font-size:var(--font-title);margin-bottom:12px;"></h1>
+      <p id="meta" style="color:var(--text-sub);font-size:var(--font-tag);margin-bottom:16px;"></p>
+      <div id="tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;"></div>
+      <div id="intro" style="line-height:1.9;white-space:pre-line;"></div>
+      <!-- 音频（仅有音频的素材显示） -->
+      <div id="audio-box" style="margin-top:20px;display:none;">
+        <audio id="audio" controls style="width:100%;"></audio>
+      </div>
+      <div style="margin-top:24px;display:flex;gap:12px;">
+        <button class="btn btn-red" onclick="downloadDoc()">下载素材</button>
+        <button class="btn btn-gold" onclick="location.href='index.html'">返回素材首页</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    const id = Number(new URLSearchParams(location.search).get('id'));
+    const m = materials.find(x => x.id === id) || materials[0];
+    document.getElementById('cover').src = m.cover;
+    document.getElementById('title').textContent = m.title;
+    document.getElementById('meta').textContent =
+      `系列：${m.series}　类型：${m.type.join('、')}　供稿人：${m.author}（${m.authorRole}）　地点：${m.location}　日期：${m.date}　浏览 ${m.views}　下载 ${m.downloads}`;
+    document.getElementById('tags').innerHTML = m.tags.map(t => `<span class="tag">${t}</span>`).join('');
+    document.getElementById('intro').textContent = m.intro;
+    if (m.audio) {
+      const box = document.getElementById('audio-box');
+      box.style.display = 'block';
+      document.getElementById('audio').src = m.audio;
+    }
+    function downloadDoc() { location.href = m.doc; }
+  </script>
+</body>
+</html>

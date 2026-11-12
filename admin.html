@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 · 红色文化数字基因库</title>
+  <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo">★ 红色文化数字基因库 · 管理后台</div>
+    <nav class="nav">
+      <a href="admin.html" class="active">数据看板</a>
+      <a href="javascript:;">审核队列</a>
+      <a href="javascript:;">素材管理</a>
+      <a href="index.html">返回素材社区</a>
+      <a href="javascript:;">退出登录</a>
+    </nav>
+  </header>
+
+  <main style="padding:24px 32px;">
+    <!-- 统计卡片（演示数据，可改为由 data.js 实时计算） -->
+    <section style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+      <div class="card" style="padding:20px;"><div style="font-size:28px;font-weight:bold;color:var(--main-red);" id="stat-total">0</div><div style="color:var(--text-sub);">素材总数</div></div>
+      <div class="card" style="padding:20px;"><div style="font-size:28px;font-weight:bold;color:var(--gold);">0</div><div style="color:var(--text-sub);">待审核投稿</div></div>
+      <div class="card" style="padding:20px;"><div style="font-size:28px;font-weight:bold;color:var(--btn-green);" id="stat-stored">0</div><div style="color:var(--text-sub);">已入库素材</div></div>
+      <div class="card" style="padding:20px;"><div style="font-size:28px;font-weight:bold;color:#2b6cb0;" id="stat-views">0</div><div style="color:var(--text-sub);">累计浏览量</div></div>
+    </section>
+
+    <h2 style="margin-bottom:16px;">素材列表（素材管理）</h2>
+    <table class="table">
+      <thead>
+        <tr><th>素材标题</th><th>供稿人</th><th>类型</th><th>状态</th><th>更新日期</th><th>操作</th></tr>
+      </thead>
+      <tbody id="admin-tbody"></tbody>
+    </table>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script>
+    document.getElementById('stat-total').textContent = materials.length;
+    document.getElementById('stat-stored').textContent = materials.length;
+    document.getElementById('stat-views').textContent = materials.reduce((s,m)=>s+m.views,0);
+
+    const tbody = document.getElementById('admin-tbody');
+    materials.forEach(m => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${m.title}</strong><br><span style="color:var(--text-sub);font-size:var(--font-tag);">${m.location}</span></td>
+        <td>${m.author}（${m.authorRole}）</td>
+        <td>${m.type.map(t=>`<span class="tag">${t}</span>`).join(' ')}</td>
+        <td><span class="tag">已入库</span></td>
+        <td>${m.date}</td>
+        <td><a href="detail.html?id=${m.id}" style="color:var(--main-red);">预览</a> · <a href="${m.doc}" style="color:var(--main-red);">下载</a></td>`;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
