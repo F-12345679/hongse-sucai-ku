@@ -8,7 +8,8 @@
 </head>
 <body style="padding:24px 32px;max-width:900px;margin:0 auto;">
   <p><a href="index.html" style="color:var(--main-red);text-decoration:none;">← 返回素材首页</a></p>
-  <div class="card" style="margin-top:16px;overflow:hidden;">
+
+  <div class="card" id="detail-content" style="margin-top:16px;overflow:hidden;">
     <img id="cover" style="width:100%;max-height:380px;object-fit:cover;" alt="">
     <div style="padding:24px;">
       <h1 id="title" style="font-size:var(--font-title);margin-bottom:12px;"></h1>
@@ -20,28 +21,96 @@
         <audio id="audio" controls style="width:100%;"></audio>
       </div>
       <div style="margin-top:24px;display:flex;gap:12px;">
-        <button class="btn btn-red" onclick="downloadDoc()">下载素材</button>
-        <button class="btn btn-gold" onclick="location.href='index.html'">返回素材首页</button>
+        <button class="btn btn-red" id="download-btn" type="button" hidden>下载素材</button>
+        <button class="btn btn-gold" type="button" onclick="location.href='index.html'">返回素材首页</button>
       </div>
     </div>
   </div>
 
+  <div class="card" id="not-found" style="margin-top:16px;padding:56px 24px;text-align:center;" hidden>
+    <h1 style="font-size:var(--font-title);margin-bottom:12px;">未找到该素材</h1>
+    <p style="color:var(--text-sub);margin-bottom:24px;">该素材可能不存在，或已被移除。</p>
+    <button class="btn btn-red" type="button" onclick="location.href='index.html'">返回素材首页</button>
+  </div>
+
   <script src="js/data.js"></script>
+  <script src="js/front-common.js"></script>
   <script>
-    const id = Number(new URLSearchParams(location.search).get('id'));
-    const m = materials.find(x => x.id === id) || materials[0];
-    document.getElementById('cover').src = m.cover;
-    document.getElementById('title').textContent = m.title;
-    document.getElementById('meta').textContent =
-      `系列：${m.series}　类型：${m.type.join('、')}　供稿人：${m.author}（${m.authorRole}）　地点：${m.location}　日期：${m.date}　浏览 ${m.views}　下载 ${m.downloads}`;
-    document.getElementById('tags').innerHTML = m.tags.map(t => `<span class="tag">${t}</span>`).join('');
-    document.getElementById('intro').textContent = m.intro;
-    if (m.audio) {
-      const box = document.getElementById('audio-box');
-      box.style.display = 'block';
-      document.getElementById('audio').src = m.audio;
-    }
-    function downloadDoc() { location.href = m.doc; }
+    (function () {
+      'use strict';
+
+      var params = new URLSearchParams(window.location.search);
+      var rawId = params.get('id');
+      var id = rawId == null ? '' : rawId.trim();
+      var material = id ? window.HongseFront.getMaterialById(id) : null;
+
+      var content = document.getElementById('detail-content');
+      var notFound = document.getElementById('not-found');
+
+      if (!material) {
+        content.hidden = true;
+        notFound.hidden = false;
+        document.title = '未找到该素材 · 红色文化数字基因库';
+        return;
+      }
+
+      document.title = material.title + ' · 红色文化数字基因库';
+
+      var cover = document.getElementById('cover');
+      cover.src = material.cover;
+      cover.alt = material.title;
+
+      document.getElementById('title').textContent = material.title;
+
+      function renderMeta() {
+        var metaParts = [
+          '系列：' + (material.series || '未分类'),
+          '类型：' + ((material.type && material.type.length) ? material.type.join('、') : '—'),
+          '公开素材'
+        ];
+        if (material.author) {
+          metaParts.push('供稿人：' + material.author + (material.authorRole ? '（' + material.authorRole + '）' : ''));
+        }
+        if (material.location) metaParts.push('地点：' + material.location);
+        if (material.date) metaParts.push('日期：' + material.date);
+        metaParts.push('浏览 ' + (material.views || 0));
+        metaParts.push('下载 ' + (material.downloads || 0));
+        document.getElementById('meta').textContent = metaParts.join('　');
+      }
+
+      var viewEntry = window.HongseFront.incrementStat(material.id, 'views', material.views);
+      if (viewEntry) material.views = viewEntry.views;
+      renderMeta();
+
+      var tagsBox = document.getElementById('tags');
+      tagsBox.textContent = '';
+      (material.tags || []).forEach(function (tagText) {
+        var tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = tagText;
+        tagsBox.appendChild(tag);
+      });
+
+      document.getElementById('intro').textContent = material.intro || '';
+
+      if (material.audio) {
+        document.getElementById('audio-box').style.display = 'block';
+        document.getElementById('audio').src = material.audio;
+      }
+
+      var downloadBtn = document.getElementById('download-btn');
+      if (material.doc) {
+        downloadBtn.hidden = false;
+        downloadBtn.addEventListener('click', function () {
+          var downloadEntry = window.HongseFront.incrementStat(material.id, 'downloads', material.downloads);
+          if (downloadEntry) {
+            material.downloads = downloadEntry.downloads;
+            renderMeta();
+          }
+          window.location.href = material.doc;
+        });
+      }
+    })();
   </script>
 </body>
 </html>

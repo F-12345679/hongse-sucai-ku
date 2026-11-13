@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>素材首页 · 红色文化数字基因库</title>
   <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
   <!-- 顶部导航 -->
@@ -12,45 +13,147 @@
     <div class="logo">★ 红色文化数字基因库</div>
     <nav class="nav">
       <a href="index.html" class="active">素材首页</a>
-      <a href="javascript:;">排行榜</a>
-      <a href="javascript:;">素材投稿</a>
-      <a href="javascript:;">我的投稿</a>
+      <a href="javascript:;" class="nav-placeholder" aria-disabled="true" title="暂未开放">排行榜</a>
+      <a href="javascript:;" id="nav-submit" title="提交素材投稿">素材投稿</a>
+      <a href="javascript:;" class="nav-placeholder" aria-disabled="true" title="暂未开放">我的投稿</a>
       <a href="admin.html">管理员后台</a>
     </nav>
   </header>
 
-  <main style="padding: 24px 32px;">
-    <!-- 搜索与筛选（演示占位，后续按需实现真实筛选） -->
-    <section style="display:flex;gap:12px;margin-bottom:20px;">
-      <input type="text" placeholder="关键词检索：旧址、老照片、口述音频…"
-             style="flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:var(--font-body);">
-      <button class="btn btn-red">搜索素材</button>
-      <button class="btn btn-green">+ 提交素材投稿</button>
+  <main class="page">
+    <!-- 搜索区 -->
+    <section class="search-panel">
+      <div class="search-row">
+        <input id="search-input" class="search-input" type="search"
+               placeholder="关键词检索：素材名称、供稿人、标签……" autocomplete="off">
+        <button id="search-btn" class="btn btn-red" type="button">搜索素材</button>
+        <button id="submit-btn" class="btn btn-green" type="button">＋ 提交素材投稿</button>
+      </div>
     </section>
 
-    <h2 style="margin:20px 0 16px;">社区素材展示区</h2>
-    <!-- 素材卡片墙：由 js/data.js 渲染 -->
-    <section id="material-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;"></section>
+    <!-- 最新素材提示 -->
+    <section class="latest-bar" aria-label="最新素材">
+      <span class="latest-label">最新入库</span>
+      <a id="latest-link" class="latest-link" href="index.html"></a>
+    </section>
+
+    <!-- 筛选区 -->
+    <section class="filter-card" aria-label="筛选条件">
+      <div class="filter-field">
+        <label for="filter-series">所属系列</label>
+        <select id="filter-series" class="filter-select"></select>
+      </div>
+      <div class="filter-field">
+        <label for="filter-type">素材类型</label>
+        <select id="filter-type" class="filter-select"></select>
+      </div>
+      <div class="filter-field">
+        <label for="filter-permission">素材权限</label>
+        <select id="filter-permission" class="filter-select">
+          <option value="all">全部权限</option>
+          <option value="public">公开素材</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="filter-sort">排序方式</label>
+        <select id="filter-sort" class="filter-select">
+          <option value="date">最新上传</option>
+          <option value="views">浏览量</option>
+          <option value="downloads">下载量</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button id="reset-btn" class="btn btn-outline" type="button">重置筛选</button>
+      </div>
+    </section>
+
+    <!-- 系列快捷标签 -->
+    <section id="series-tabs" class="series-tabs" aria-label="系列快捷筛选"></section>
+
+    <!-- 卡片墙 -->
+    <div class="grid-head">
+      <h2>社区素材展示区</h2>
+      <span id="result-count" class="result-count"></span>
+    </div>
+    <section id="material-grid" class="material-grid" aria-live="polite"></section>
+    <p id="empty-state" class="empty-state" hidden>暂无匹配素材</p>
   </main>
 
+  <footer class="site-footer">红色文化数字基因库 · 社区素材展示</footer>
+
+  <!-- 投稿弹窗 -->
+  <div id="submit-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h3 id="modal-title">提交素材投稿</h3>
+        <button type="button" class="modal-close" id="modal-close" aria-label="关闭投稿窗口">×</button>
+      </div>
+      <form id="submit-form" class="modal-body" novalidate>
+        <div class="form-grid">
+          <div class="form-field form-field-full">
+            <label for="field-title">素材标题 <span class="required">*</span></label>
+            <input id="field-title" name="title" type="text" maxlength="60" placeholder="请输入素材标题">
+          </div>
+
+          <div class="form-field">
+            <label for="field-author">供稿人 <span class="required">*</span></label>
+            <input id="field-author" name="author" type="text" maxlength="30" placeholder="请输入供稿人姓名">
+          </div>
+
+          <div class="form-field">
+            <label for="field-series">所属系列 <span class="required">*</span></label>
+            <input id="field-series" name="series" type="text" maxlength="30" list="series-options"
+                   placeholder="如：革命文物系列" autocomplete="off">
+            <datalist id="series-options"></datalist>
+          </div>
+
+          <div class="form-field">
+            <label for="field-date">日期</label>
+            <input id="field-date" name="date" type="date">
+          </div>
+
+          <div class="form-field">
+            <label for="field-location">地点</label>
+            <input id="field-location" name="location" type="text" maxlength="60" placeholder="选填">
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="field-tags">标签</label>
+            <input id="field-tags" name="tags" type="text" maxlength="100"
+                   placeholder="选填，多个标签用逗号分隔，如：长征, 旧址">
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="field-intro">简介 <span class="required">*</span></label>
+            <textarea id="field-intro" name="intro" rows="4" maxlength="2000"
+                      placeholder="请填写素材简介"></textarea>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="field-cover">本地配图 <span class="required">*</span></label>
+            <input id="field-cover" name="cover" type="file" accept="image/*">
+            <p class="field-hint">支持 JPG、PNG 等图片，建议不超过 2MB。</p>
+            <div id="cover-preview-wrap" class="cover-preview-wrap" hidden>
+              <img id="cover-preview" alt="配图预览">
+            </div>
+          </div>
+        </div>
+
+        <p id="form-error" class="form-error" role="alert" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="modal-cancel">取消</button>
+          <button type="submit" class="btn btn-green">确认投稿</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
   <script src="js/data.js"></script>
-  <script>
-    // 渲染素材卡片；点击跳转详情页 detail.html?id=编号
-    const grid = document.getElementById('material-grid');
-    materials.forEach(m => {
-      const card = document.createElement('div');
-      card.className = 'card material-card';
-      card.onclick = () => location.href = `detail.html?id=${m.id}`;
-      const tags = m.tags.map(t => `<span class="tag">${t}</span>`).join('');
-      card.innerHTML = `
-        <img class="cover" src="${m.cover}" alt="${m.title}">
-        <div class="info">
-          <div class="title">${m.title}</div>
-          <div class="tags">${tags}</div>
-          <div class="meta"><span>浏览 ${m.views}</span><span>下载 ${m.downloads}</span></div>
-        </div>`;
-      grid.appendChild(card);
-    });
-  </script>
+  <script src="js/front-common.js"></script>
+  <script src="js/index.js"></script>
 </body>
 </html>
