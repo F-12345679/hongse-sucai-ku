@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>素材管理 · 管理后台 · 红色文化数字基因库</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+  <!-- 顶部导航 -->
+  <header class="top-bar admin-top-bar">
+    <div class="logo">
+      <span class="logo-mark" aria-hidden="true">★</span>
+      <span class="logo-text">红色文化数字基因库 · 管理后台</span>
+    </div>
+    <nav class="nav admin-nav" aria-label="后台导航">
+      <a href="admin.html">数据看板</a>
+      <a href="javascript:;" class="nav-placeholder" data-admin-notice="审核队列功能将在后续版本开放，暂不跳转页面。" aria-disabled="true" title="暂未开放">审核队列</a>
+      <a href="admin-materials.html" class="active" aria-current="page">素材管理</a>
+      <a href="index.html">返回素材社区</a>
+      <a href="javascript:;" class="nav-placeholder" data-admin-notice="演示版免登录，无需退出。" aria-disabled="true" title="暂未开放">退出登录</a>
+    </nav>
+  </header>
+
+  <main class="admin-main">
+    <!-- 素材管理 -->
+    <section id="materials" class="admin-section" aria-labelledby="materials-title">
+      <div class="section-head">
+        <div>
+          <h1 id="materials-title">素材管理</h1>
+          <p class="section-desc">投稿文稿 · 音频 · 调研配图 一表统管</p>
+        </div>
+      </div>
+
+      <!-- 筛选工具栏 -->
+      <div class="filter-bar" role="search" aria-label="素材筛选">
+        <div class="filter-search">
+          <svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="m16.5 16.5 4 4"/>
+          </svg>
+          <input id="material-search" name="keyword" type="search"
+                 placeholder="搜索素材标题 / 供稿人" aria-label="搜索素材标题或供稿人" autocomplete="off">
+        </div>
+        <select id="material-type-filter" name="type" class="filter-select" aria-label="按素材类型筛选">
+          <option value="all">全部类型</option>
+          <option value="文档">文档</option>
+          <option value="音频">音频</option>
+          <option value="配图">配图</option>
+        </select>
+        <select id="material-status-filter" name="status" class="filter-select" aria-label="按素材状态筛选">
+          <option value="all">全部状态</option>
+          <option value="已入库">已入库</option>
+          <option value="待审核">待审核</option>
+        </select>
+        <div class="filter-actions">
+          <button type="button" class="btn btn-red" id="upload-open">＋ 上传素材</button>
+        </div>
+      </div>
+
+      <!-- 概览卡 -->
+      <section class="overview-grid" aria-label="素材概览">
+        <article class="overview-card">
+          <p class="overview-label">素材总数</p>
+          <div class="overview-main">
+            <p class="overview-value" id="overview-total">6</p>
+            <p class="overview-note" id="overview-total-note">文档 6 · 音频 2</p>
+          </div>
+        </article>
+        <article class="overview-card is-complete" id="overview-covered-card">
+          <p class="overview-label">已配图</p>
+          <div class="overview-main">
+            <span class="overview-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="m8.5 12 2.3 2.3L16 9.5"/>
+              </svg>
+            </span>
+            <p class="overview-value"><span id="overview-covered-count">6</span><span class="overview-sep">/</span><span id="overview-covered-total">6</span></p>
+            <p class="overview-note" id="overview-covered-note">全部完成</p>
+          </div>
+        </article>
+        <article class="overview-card">
+          <p class="overview-label">已入库</p>
+          <div class="overview-main">
+            <p class="overview-value"><span id="overview-stored">6</span><span class="overview-unit">篇</span></p>
+            <p class="overview-note">全部通过审核</p>
+          </div>
+        </article>
+        <article class="overview-card">
+          <p class="overview-label">今日上新</p>
+          <div class="overview-main">
+            <p class="overview-value"><span id="overview-daily">0</span><span class="overview-sep">/</span>30</p>
+            <p class="overview-note">已上架 / 每日限30篇</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- 素材列表 -->
+      <div class="list-panel">
+        <div class="table-wrap">
+          <table class="table list-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-check">
+                  <input type="checkbox" id="material-check-all" aria-label="全选素材">
+                </th>
+                <th scope="col" class="col-title">素材标题</th>
+                <th scope="col" class="col-author">供稿人</th>
+                <th scope="col" class="col-type">类型</th>
+                <th scope="col" class="col-status">状态</th>
+                <th scope="col" class="col-date">更新日期</th>
+                <th scope="col" class="col-actions">操作</th>
+              </tr>
+            </thead>
+            <!-- 静态示意数据，接入 js/admin.js 后由脚本覆盖 -->
+            <tbody id="material-tbody">
+              <tr data-id="1">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《半条被子暖人心》">
+                </td>
+                <td>
+                  <span class="material-main">半条被子暖人心</span>
+                  <span class="material-sub">汝城县文明瑶族乡沙洲村</span>
+                </td>
+                <td>陈雨薇</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-audio">音频</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-01</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=1" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/01_bantiaobeizi.doc">下载</a>
+                </td>
+              </tr>
+              <tr data-id="2">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《雪岭草地的记忆》">
+                </td>
+                <td>
+                  <span class="material-main">雪岭草地的记忆</span>
+                  <span class="material-sub">川西高原 · 泸定桥</span>
+                </td>
+                <td>李明远</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-audio">音频</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-03</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=2" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/02_ludingqiao.docx">下载</a>
+                </td>
+              </tr>
+              <tr data-id="3">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《长征又从桑植出发》">
+                </td>
+                <td>
+                  <span class="material-main">长征又从桑植出发</span>
+                  <span class="material-sub">桑植县刘家坪</span>
+                </td>
+                <td>向红梅</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-10</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=3" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/03_sangzhi.docx">下载</a>
+                </td>
+              </tr>
+              <tr data-id="4">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《湘南起义燃星火》">
+                </td>
+                <td>
+                  <span class="material-main">湘南起义燃星火</span>
+                  <span class="material-sub">宜章 · 湘南起义纪念馆</span>
+                </td>
+                <td>谭志强</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-05</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=4" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/04_xiangnan.docx">下载</a>
+                </td>
+              </tr>
+              <tr data-id="5">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《通道转兵指方向》">
+                </td>
+                <td>
+                  <span class="material-main">通道转兵指方向</span>
+                  <span class="material-sub">通道县 · 恭城书院</span>
+                </td>
+                <td>吴晓峰</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-07</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=5" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/05_tongdao.docx">下载</a>
+                </td>
+              </tr>
+              <tr data-id="6">
+                <td class="col-check">
+                  <input type="checkbox" class="row-check" aria-label="选择素材《断肠明志铸忠魂》">
+                </td>
+                <td>
+                  <span class="material-main">断肠明志铸忠魂</span>
+                  <span class="material-sub">永州道县 · 陈树湘烈士纪念陵园</span>
+                </td>
+                <td>周立军</td>
+                <td>
+                  <span class="type-chip type-doc">文档</span>
+                  <span class="type-chip type-image">配图</span>
+                </td>
+                <td><span class="status-chip status-stored">已入库</span></td>
+                <td>2026-11-12</td>
+                <td class="row-actions">
+                  <a href="detail.html?id=6" target="_blank" rel="noopener">预览</a>
+                  <span class="action-sep" aria-hidden="true">·</span>
+                  <a href="assets/docs/06_chenshuxiang.docx">下载</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="list-footer">
+          <div class="bulk-actions">
+            <button type="button" class="btn btn-outline" id="batch-audio">批量挂音频</button>
+            <button type="button" class="btn btn-outline" id="batch-cover">批量替换配图</button>
+            <button type="button" class="btn btn-outline" id="export-list">导出清单</button>
+          </div>
+          <span class="selection-count" id="selected-count" aria-live="polite">已选 0 项</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 上传素材弹窗 -->
+  <div class="modal" id="upload-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title">
+      <div class="modal-head">
+        <h2 id="upload-modal-title">上传素材</h2>
+        <button type="button" class="modal-close" id="upload-close" aria-label="关闭上传素材弹窗">×</button>
+      </div>
+
+      <form class="modal-body upload-form" id="upload-form" novalidate>
+        <div class="form-grid">
+          <div class="form-field form-field-full">
+            <label for="upload-title">标题</label>
+            <input id="upload-title" name="title" type="text" maxlength="60" placeholder="请输入素材标题" aria-describedby="upload-title-error">
+            <p class="field-error" id="upload-title-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="upload-author">供稿人</label>
+            <input id="upload-author" name="author" type="text" maxlength="30" placeholder="请输入供稿人姓名">
+          </div>
+
+          <div class="form-field">
+            <label for="upload-series">系列</label>
+            <input id="upload-series" name="series" type="text" maxlength="30" placeholder="如：革命文物系列">
+          </div>
+
+          <div class="form-field">
+            <label for="upload-date">日期</label>
+            <input id="upload-date" name="date" type="date">
+          </div>
+
+          <div class="form-field">
+            <label for="upload-location">地点</label>
+            <input id="upload-location" name="location" type="text" maxlength="60" placeholder="请输入素材所在地点">
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="upload-tags">标签</label>
+            <input id="upload-tags" name="tags" type="text" maxlength="100"
+                   placeholder="多个标签用逗号分隔，如：长征, 旧址">
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="upload-intro">简介</label>
+            <textarea id="upload-intro" name="intro" rows="4" maxlength="2000"
+                      placeholder="请填写素材简介"></textarea>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="upload-cover">配图</label>
+            <input id="upload-cover" name="cover" type="file" accept="image/*" aria-describedby="upload-cover-error">
+            <p class="field-hint">支持 JPG、PNG 等图片格式，单文件不超过 20MB；列表使用压缩封面，原图另存用于下载。</p>
+            <p class="field-error" id="upload-cover-error" role="alert" hidden></p>
+            <div class="cover-preview" id="upload-cover-preview" hidden>
+              <img id="upload-cover-image" alt="素材配图预览">
+            </div>
+          </div>
+
+          <fieldset class="form-field form-field-full type-options">
+            <legend>类型</legend>
+            <label class="type-option">
+              <input type="checkbox" id="upload-type-doc" name="type" value="文档">
+              文档
+            </label>
+            <label class="type-option">
+              <input type="checkbox" id="upload-type-audio" name="type" value="音频">
+              音频
+            </label>
+            <label class="type-option">
+              <input type="checkbox" id="upload-type-image" name="type" value="配图">
+              配图
+            </label>
+          </fieldset>
+
+          <div class="form-field form-field-full" id="upload-audio-field" hidden>
+            <label for="upload-audio">音频附件</label>
+            <input id="upload-audio" name="audio" type="file" accept="audio/*"
+                   aria-describedby="upload-audio-hint upload-audio-error">
+            <p class="field-hint" id="upload-audio-hint">支持 MP3、WAV 等音频，单文件不超过 20MB；音频仅上传存储，暂不提供后台下载。</p>
+            <p class="attachment-current" id="upload-audio-current" hidden></p>
+            <p class="field-error" id="upload-audio-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field form-field-full" id="upload-doc-field" hidden>
+            <label for="upload-doc">文档附件</label>
+            <input id="upload-doc" name="doc" type="file"
+                   accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx"
+                   aria-describedby="upload-doc-hint upload-doc-error">
+            <p class="field-hint" id="upload-doc-hint">支持 DOC/DOCX、PDF、TXT 等文档，单文件不超过 20MB。</p>
+            <p class="attachment-current" id="upload-doc-current" hidden></p>
+            <p class="field-error" id="upload-doc-error" role="alert" hidden></p>
+          </div>
+        </div>
+
+        <p class="form-error" id="upload-error" role="alert" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="upload-cancel">取消</button>
+          <button type="submit" class="btn btn-green" id="upload-submit">确认上传</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/front-common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

@@ -307,6 +307,7 @@
 
     card.addEventListener('click', openDetail);
     card.addEventListener('keydown', function (event) {
+      if (event.target !== card) return;
       if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
         event.preventDefault();
         openDetail();
@@ -350,6 +351,32 @@
     var downloads = document.createElement('span');
     downloads.textContent = '下载 ' + (material.downloads || 0);
     meta.appendChild(downloads);
+
+    var api = window.HongseFront;
+    var canDownload = api && typeof api.canDownloadMaterial === 'function'
+      ? api.canDownloadMaterial(material)
+      : !!material.doc;
+    if (canDownload) {
+      var downloadBtn = document.createElement('button');
+      downloadBtn.type = 'button';
+      downloadBtn.className = 'card-download';
+      downloadBtn.textContent = '下载';
+      downloadBtn.setAttribute('aria-label', '下载素材：' + material.title);
+      downloadBtn.addEventListener('click', function (event) {
+        event.stopPropagation();
+        var entry = api && typeof api.incrementStat === 'function'
+          ? api.incrementStat(material.id, 'downloads', material.downloads)
+          : null;
+        if (entry) {
+          material.downloads = entry.downloads;
+          downloads.textContent = '下载 ' + entry.downloads;
+        }
+        if (api && typeof api.downloadMaterial === 'function') {
+          api.downloadMaterial(material);
+        }
+      });
+      meta.appendChild(downloadBtn);
+    }
 
     info.appendChild(meta);
     card.appendChild(info);

@@ -7,6 +7,7 @@
 
   var CUSTOM_KEY = 'hongse_custom_materials_v1';
   var STATS_KEY = 'hongse_material_stats_v1';
+  var ID_COUNTER_KEY = 'hongse_custom_id_counter_v1';
 
   function readJSON(key, fallback) {
     try {
@@ -65,13 +66,33 @@
     return saveCustomMaterials(list);
   }
 
+  function readIdCounter() {
+    var value = Number(readJSON(ID_COUNTER_KEY, 0));
+    return isFinite(value) && value > 0 ? Math.floor(value) : 0;
+  }
+
+  function saveIdCounter(value) {
+    try {
+      global.localStorage.setItem(ID_COUNTER_KEY, String(value));
+    } catch (err) {
+      /* 计数器写入失败时不影响本次 id 返回 */
+    }
+  }
+
   function nextCustomId() {
+    /* 已分配的最大 id 持久化保存：删掉最大 id 的素材后也不会回退复用 */
     var maxId = 999;
+    var storedId = readIdCounter();
+    if (storedId > maxId) maxId = storedId;
+
     getOriginalMaterials().concat(getCustomMaterials()).forEach(function (item) {
       var id = Number(item.id);
       if (isFinite(id) && id > maxId) maxId = id;
     });
-    return maxId + 1;
+
+    var nextId = Math.floor(maxId) + 1;
+    saveIdCounter(nextId);
+    return nextId;
   }
 
   function getStats() {
@@ -148,6 +169,491 @@
     }
   }
 
+  /* ---------- 素材下载与 Word 生成（前台、后台共用） ---------- */
+  var ATTACH_DB_NAME = 'hongse_admin_attachments_v1';
+  var ATTACH_STORE_NAME = 'files';
+  var attachDbPromise = null;
+
+  function openAttachmentDb() {
+    if (attachDbPromise) return attachDbPromise;
+
+    attachDbPromise = new Promise(function (resolve, reject) {
+      if (!global.indexedDB) {
+        reject(new Error('当前浏览器不支持本地附件库'));
+        return;
+      }
+
+      var request = global.indexedDB.open(ATTACH_DB_NAME, 1);
+      request.onupgradeneeded = function () {
+        var db = request.result;
+        if (!db.objectStoreNames.contains(ATTACH_STORE_NAME)) {
+          db.createObjectStore(ATTACH_STORE_NAME, { keyPath: 'id' });
+        }
+      };
+      request.onsuccess = function () {
+        resolve(request.result);
+      };
+      request.onerror = function () {
+        attachDbPromise = null;
+        reject(request.error || new Error('附件库打开失败'));
+      };
+    });
+
+    return attachDbPromise;
+  }
+
+  function getAttachmentRecord(id) {
+    return openAttachmentDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(ATTACH_STORE_NAME, 'readonly');
+        var request = tx.objectStore(ATTACH_STORE_NAME).get(String(id));
+        request.onsuccess = function () { resolve(request.result || null); };
+        request.onerror = function () { reject(request.error || new Error('附件读取失败')); };
+      });
+    });
+  }
+
+  function materialRef(material, field) {
+    var ref = material ? material[field + 'Ref'] : null;
+    return ref && typeof ref === 'object' && ref.id ? ref : null;
+  }
+
+  function docTypeList(material) {
+    return material && Array.isArray(material.type) ? material.type : [];
+  }
+
+  function docEscape(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = typeof reader.result === 'string' ? reader.result : '';
+        if (result) {
+          resolve(result);
+        } else {
+          reject(new Error('配图数据为空'));
+        }
+      };
+      reader.onerror = function () {
+        reject(reader.error || new Error('配图读取失败'));
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function fetchAsDataUrl(source) {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+
+      function finish(handler, value) {
+        if (settled) return;
+        settled = true;
+        handler(value);
+      }
+
+      function viaXhr(reason) {
+        var xhr = new XMLHttpRequest();
+        try {
+          xhr.open('GET', source, true);
+        } catch (err) {
+          finish(reject, err);
+          return;
+        }
+        xhr.responseType = 'blob';
+        xhr.onload = function () {
+          if ((xhr.status === 200 || xhr.status === 0) && xhr.response) {
+            blobToDataUrl(xhr.response).then(function (url) {
+              finish(resolve, url);
+            }, function () {
+              finish(reject, reason);
+            });
+          } else {
+            finish(reject, reason);
+          }
+        };
+        xhr.onerror = function () {
+          finish(reject, reason);
+        };
+        xhr.send();
+      }
+
+      if (typeof global.fetch === 'function') {
+        global.fetch(source).then(function (response) {
+          if (!response.ok) throw new Error('读取配图失败：HTTP ' + response.status);
+          return response.blob();
+        }).then(function (blob) {
+          return blobToDataUrl(blob);
+        }).then(function (url) {
+          finish(resolve, url);
+        }).catch(function (err) {
+          viaXhr(err);
+        });
+      } else {
+        viaXhr(new Error('浏览器不支持 fetch'));
+      }
+    });
+  }
+
+  function resolveMaterialCover(material) {
+    var cover = material && material.cover;
+    var source = typeof cover === 'string' ? cover.trim() : '';
+
+    if (!source) {
+      return Promise.resolve({ dataUrl: '', failed: false, reason: '' });
+    }
+    if (source.indexOf('data:') === 0) {
+      return Promise.resolve({ dataUrl: source, failed: false, reason: '' });
+    }
+
+    var ref = materialRef(material, 'cover');
+    var task = ref && ref.id
+      ? getAttachmentRecord(ref.id).then(function (record) {
+        if (!record || !record.blob) throw new Error('附件库中没有配图原图');
+        return blobToDataUrl(record.blob);
+      }).catch(function () {
+        return fetchAsDataUrl(source);
+      })
+      : fetchAsDataUrl(source);
+
+    return task.then(function (dataUrl) {
+      if (!dataUrl) throw new Error('配图数据为空');
+      return { dataUrl: dataUrl, failed: false, reason: '' };
+    }).catch(function (err) {
+      return {
+        dataUrl: '',
+        failed: true,
+        reason: err && err.message ? err.message : '未知原因'
+      };
+    });
+  }
+
+  function docDateKey(material) {
+    var fields = ['date', 'publishDate', 'publishTime', 'createdAt', 'createDate'];
+    for (var i = 0; i < fields.length; i += 1) {
+      var raw = material ? material[fields[i]] : '';
+      var text = raw == null ? '' : String(raw).trim();
+      if (!text) continue;
+      var matched = text.match(/^(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/);
+      if (matched) {
+        var month = Number(matched[2]);
+        var day = Number(matched[3]);
+        return matched[1] + '-' + (month < 10 ? '0' + month : month) + '-' + (day < 10 ? '0' + day : day);
+      }
+    }
+    return '';
+  }
+
+  function formatDocDate(material) {
+    var key = docDateKey(material);
+    if (!key) return '';
+    var parts = key.split('-');
+    if (parts.length !== 3) return '';
+    return parts[0] + ' 年 ' + Number(parts[1]) + ' 月 ' + Number(parts[2]) + ' 日';
+  }
+
+  function docAuthorLine(material) {
+    var author = String(material.author || '').trim();
+    if (!author) return '';
+
+    var extra = [];
+    var role = String(material.authorRole || '').trim();
+    var location = String(material.location || '').trim();
+    if (role) extra.push(role);
+    if (location) extra.push(location);
+
+    if (!extra.length) return '供稿人：' + author;
+    return '供稿人：' + author + '（' + extra.join('，') + '）';
+  }
+
+  function docParagraphs(material) {
+    var intro = String(material.intro || '').replace(/\r\n/g, '\n').trim();
+    var paragraphs = intro
+      ? intro.split(/\n\s*\n|\n/).map(function (text) {
+        return text.trim();
+      }).filter(function (text) {
+        return text.length > 0;
+      })
+      : [];
+
+    if (paragraphs.length) return paragraphs;
+
+    var fallback = [];
+    var series = String(material.series || '').trim();
+    var location = String(material.location || '').trim();
+    var tags = Array.isArray(material.tags)
+      ? material.tags.filter(function (tag) { return String(tag).trim(); }).join('、')
+      : '';
+    var types = docTypeList(material).join('、');
+
+    if (series) fallback.push('所属系列：' + series + '。');
+    if (location) fallback.push('素材地点：' + location + '。');
+    if (tags) fallback.push('相关标签：' + tags + '。');
+    if (!fallback.length && types) fallback.push('素材类型：' + types + '。');
+    if (!fallback.length) {
+      fallback.push('该素材暂无详细简介，更多内容请前往红色文化数字基因库查看。');
+    }
+    return fallback;
+  }
+
+  function buildMaterialDocFileName(material) {
+    var base = String((material && material.title) || '素材文档')
+      .replace(/[\\/:*?"<>|\r\n]/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 120) || '素材文档';
+
+    if (/\.doc$/i.test(base)) return base;
+    return base + '.doc';
+  }
+
+  /* 与后台共用：标题、供稿人、正文、右对齐日期、居中配图 */
+  function buildMaterialDocHtml(material, cover, imageSrc, imageSize) {
+    var title = docEscape(material.title || '未命名素材');
+    var authorLine = docAuthorLine(material);
+    var paragraphs = docParagraphs(material).map(function (text) {
+      return '<p class="doc-body">' + docEscape(text) + '</p>';
+    }).join('');
+
+    var dateText = formatDocDate(material);
+    var dateHtml = dateText ? '<p class="doc-date">' + docEscape(dateText) + '</p>' : '';
+
+    var coverHtml = '';
+    if (imageSrc) {
+      var heightAttr = '';
+      if (imageSize && imageSize.width > 0 && imageSize.height > 0) {
+        heightAttr = String(Math.max(1, Math.round(600 * imageSize.height / imageSize.width)));
+      }
+      coverHtml = '<p class="doc-cover" align="center"><img src="' + docEscape(imageSrc) +
+        '" width="600"' + (heightAttr ? ' height="' + heightAttr + '"' : '') +
+        ' alt="' + title + '" style="width:600px;' +
+        (heightAttr ? 'height:' + heightAttr + 'px;' : 'height:auto;') + 'max-width:100%;"></p>';
+    } else if (cover && cover.failed) {
+      coverHtml = '<p class="doc-cover-failed" align="center">配图加载失败</p>';
+    }
+
+    return '<!DOCTYPE html>'
+      + '<html xmlns:o="urn:schemas-microsoft-com:office:office" '
+      + 'xmlns:w="urn:schemas-microsoft-com:office:word" '
+      + 'xmlns="http://www.w3.org/TR/REC-html40">'
+      + '<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">'
+      + '<meta name="ProgId" content="Word.Document">'
+      + '<title>' + title + '</title>'
+      + '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>'
+      + '<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->'
+      + '<style>'
+      + '@page WordSection1 { size: 595.3pt 841.9pt; margin: 72pt 72pt 72pt 72pt; }'
+      + 'div.WordSection1 { page: WordSection1; }'
+      + 'body { font-family: "宋体", SimSun, serif; font-size: 12pt; color: #000000; }'
+      + 'h1.doc-title { margin: 0 0 14pt; font-family: "黑体", SimHei, sans-serif;'
+      + ' font-size: 22pt; font-weight: bold; line-height: 1.4; text-align: center; }'
+      + 'p.doc-author { margin: 0 0 20pt; font-size: 12pt; text-align: center; }'
+      + 'p.doc-body { margin: 0 0 12pt; font-size: 12pt; line-height: 1.8; text-indent: 2em; }'
+      + 'p.doc-date { margin: 18pt 0 20pt; font-size: 12pt; text-align: right; }'
+      + 'p.doc-cover { margin: 0; text-align: center; }'
+      + 'p.doc-cover-failed { margin: 0; font-size: 12pt; color: #b3131b; text-align: center; }'
+      + '</style></head>'
+      + '<body><div class="WordSection1">'
+      + '<h1 class="doc-title">' + title + '</h1>'
+      + (authorLine ? '<p class="doc-author">' + docEscape(authorLine) + '</p>' : '')
+      + paragraphs
+      + dateHtml
+      + coverHtml
+      + '</div></body></html>';
+  }
+
+  function hasDocSource(material) {
+    return !!materialRef(material, 'doc') ||
+      (typeof material.doc === 'string' && material.doc.trim().length > 0);
+  }
+
+  function hasAudioLike(material) {
+    return docTypeList(material).indexOf('音频') >= 0 ||
+      !!materialRef(material, 'audio') ||
+      !!materialRef(material, 'voice') ||
+      (typeof material.audio === 'string' && material.audio.trim().length > 0) ||
+      (typeof material.voice === 'string' && material.voice.trim().length > 0);
+  }
+
+  /* 有文档可下原件；纯音频/纯配音不提供下载；其余生成 Word */
+  function canDownloadMaterial(material) {
+    if (!material) return false;
+    if (hasDocSource(material)) return true;
+    return !hasAudioLike(material);
+  }
+
+  function triggerDocDownload(url, fileName) {
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = fileName || '';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    global.setTimeout(function () {
+      document.body.removeChild(link);
+    }, 0);
+  }
+
+  function utf8ToBase64(text) {
+    var bytes;
+    if (typeof global.TextEncoder === 'function') {
+      bytes = new global.TextEncoder().encode(text);
+    } else {
+      var encoded = unescape(encodeURIComponent(text));
+      bytes = [];
+      for (var i = 0; i < encoded.length; i += 1) bytes.push(encoded.charCodeAt(i));
+    }
+
+    var binary = '';
+    for (var j = 0; j < bytes.length; j += 1) {
+      binary += String.fromCharCode(bytes[j]);
+    }
+    return global.btoa(binary);
+  }
+
+  function wrapBase64(base64) {
+    return String(base64 || '').replace(/\s+/g, '').replace(/(.{76})/g, '$1\r\n').replace(/\r\n$/, '');
+  }
+
+  function dataUrlToPart(dataUrl) {
+    var text = String(dataUrl || '');
+    var comma = text.indexOf(',');
+    if (text.indexOf('data:') !== 0 || comma < 0) return null;
+
+    var meta = text.slice(5, comma);
+    var payload = text.slice(comma + 1);
+    var isBase64 = /;base64/i.test(meta);
+    var mime = meta.split(';')[0] || 'image/png';
+
+    if (!isBase64) {
+      payload = utf8ToBase64(decodeURIComponent(payload));
+    }
+    return { mime: mime, base64: wrapBase64(payload) };
+  }
+
+  var IMAGE_EXT = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/gif': 'gif',
+    'image/bmp': 'bmp',
+    'image/webp': 'webp',
+    'image/svg+xml': 'svg'
+  };
+
+  function measureImage(dataUrl) {
+    return new Promise(function (resolve) {
+      if (!dataUrl) { resolve(null); return; }
+      var img = new Image();
+      img.onload = function () {
+        resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.onerror = function () { resolve(null); };
+      img.src = dataUrl;
+    });
+  }
+
+  /* Word 对 HTML 里的 data: 图片支持很差，改用 MHTML 多部件内嵌图片 */
+  function buildMaterialMhtml(material, cover, imageSize) {
+    var part = dataUrlToPart(cover && cover.dataUrl);
+    var imageName = part ? 'cover_image.' + (IMAGE_EXT[part.mime] || 'png') : '';
+    var html = buildMaterialDocHtml(material, cover, part ? imageName : '', imageSize);
+
+    var boundary = '----=_NextPart_RedGene_0001';
+    var htmlLocation = 'file:///C:/redgene/material.htm';
+    var imageLocation = 'file:///C:/redgene/' + imageName;
+    var lines = [];
+
+    lines.push('MIME-Version: 1.0');
+    lines.push('Content-Type: multipart/related; type="text/html"; boundary="' + boundary + '"');
+    lines.push('');
+
+    lines.push('--' + boundary);
+    lines.push('Content-Type: text/html; charset="utf-8"');
+    lines.push('Content-Transfer-Encoding: base64');
+    lines.push('Content-Location: ' + htmlLocation);
+    lines.push('');
+    lines.push(wrapBase64(utf8ToBase64(html)));
+    lines.push('');
+
+    if (part) {
+      lines.push('--' + boundary);
+      lines.push('Content-Type: ' + part.mime);
+      lines.push('Content-Transfer-Encoding: base64');
+      lines.push('Content-Location: ' + imageLocation);
+      lines.push('');
+      lines.push(part.base64);
+      lines.push('');
+    }
+
+    lines.push('--' + boundary + '--');
+    lines.push('');
+    return lines.join('\r\n');
+  }
+
+  function buildMaterialDocBlob(material) {
+    return resolveMaterialCover(material).then(function (cover) {
+      return measureImage(cover.dataUrl).then(function (imageSize) {
+        var mhtml = buildMaterialMhtml(material, cover, imageSize);
+        return {
+          blob: new Blob([mhtml], { type: 'application/msword' }),
+          failedCover: !!cover.failed,
+          reason: cover.reason || '',
+          fileName: buildMaterialDocFileName(material)
+        };
+      });
+    });
+  }
+
+  function generateMaterialDoc(material) {
+    return buildMaterialDocBlob(material).then(function (result) {
+      var objectUrl = URL.createObjectURL(result.blob);
+      triggerDocDownload(objectUrl, result.fileName);
+      global.setTimeout(function () {
+        URL.revokeObjectURL(objectUrl);
+      }, 1500);
+      return { downloaded: true, failedCover: result.failedCover, reason: result.reason };
+    });
+  }
+
+  function downloadMaterial(material) {
+    if (!canDownloadMaterial(material)) {
+      return Promise.resolve({ downloaded: false, reason: 'blocked' });
+    }
+
+    var docUrl = typeof material.doc === 'string' ? material.doc.trim() : '';
+    if (docUrl) {
+      global.location.href = docUrl;
+      return Promise.resolve({ downloaded: true, reason: 'original' });
+    }
+
+    var docRef = materialRef(material, 'doc');
+    if (docRef) {
+      return getAttachmentRecord(docRef.id).then(function (record) {
+        if (!record || !record.blob) throw new Error('附件不存在');
+        var objectUrl = URL.createObjectURL(record.blob);
+        triggerDocDownload(objectUrl, docRef.name || record.name || '素材文档');
+        global.setTimeout(function () {
+          URL.revokeObjectURL(objectUrl);
+        }, 1500);
+        return { downloaded: true, reason: 'attachment' };
+      }).catch(function (err) {
+        return { downloaded: false, reason: err && err.message ? err.message : 'attachment' };
+      });
+    }
+
+    return generateMaterialDoc(material).catch(function (err) {
+      return { downloaded: false, reason: err && err.message ? err.message : 'doc' };
+    });
+  }
+
   global.HongseFront = {
     CUSTOM_KEY: CUSTOM_KEY,
     STATS_KEY: STATS_KEY,
@@ -161,6 +667,15 @@
     getAllMaterials: getAllMaterials,
     getMaterialById: getMaterialById,
     incrementStat: incrementStat,
-    clearCustomMaterials: clearCustomMaterials
+    clearCustomMaterials: clearCustomMaterials,
+    resolveMaterialCover: resolveMaterialCover,
+    buildMaterialDocHtml: buildMaterialDocHtml,
+    buildMaterialDocFileName: buildMaterialDocFileName,
+    buildMaterialDocBlob: buildMaterialDocBlob,
+    canDownloadMaterial: canDownloadMaterial,
+    downloadMaterial: downloadMaterial,
+    generateMaterialDoc: generateMaterialDoc,
+    getAttachmentRecord: getAttachmentRecord
   };
+
 })(window);

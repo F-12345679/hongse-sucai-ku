@@ -304,6 +304,25 @@ body {
   gap: 16px;
 }
 
+.material-card .card-download {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--main-red);
+  font: inherit;
+  font-size: var(--font-tag);
+  line-height: inherit;
+  cursor: pointer;
+}
+
+.material-card .card-download:hover,
+.material-card .card-download:focus-visible {
+  color: var(--main-red-dark);
+  text-decoration: underline;
+  outline: none;
+}
+
 .empty-state {
   padding: 56px 20px;
   text-align: center;

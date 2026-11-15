@@ -99,7 +99,7 @@
       }
 
       var downloadBtn = document.getElementById('download-btn');
-      if (material.doc) {
+      if (window.HongseFront.canDownloadMaterial(material)) {
         downloadBtn.hidden = false;
         downloadBtn.addEventListener('click', function () {
           var downloadEntry = window.HongseFront.incrementStat(material.id, 'downloads', material.downloads);
@@ -107,7 +107,7 @@
             material.downloads = downloadEntry.downloads;
             renderMeta();
           }
-          window.location.href = material.doc;
+          window.HongseFront.downloadMaterial(material);
         });
       }
     })();
