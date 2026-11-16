@@ -7,7 +7,12 @@
 
   var CUSTOM_KEY = 'hongse_custom_materials_v1';
   var STATS_KEY = 'hongse_material_stats_v1';
+  var SEED_STATS_KEY = 'hongse_material_seed_stats_v1';
   var ID_COUNTER_KEY = 'hongse_custom_id_counter_v1';
+  var SEED_VIEWS_MIN = 800;
+  var SEED_VIEWS_MAX = 1199;
+  var SEED_DOWNLOADS_MIN = 180;
+  var SEED_DOWNLOADS_MAX = 439;
 
   function readJSON(key, fallback) {
     try {
@@ -17,6 +22,15 @@
     } catch (err) {
       return fallback;
     }
+  }
+
+  function toCount(value, fallback) {
+    var num = Number(value);
+    return isFinite(num) && num >= 0 ? Math.floor(num) : (Number(fallback) || 0);
+  }
+
+  function randomInt(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
   }
 
   function getOriginalMaterials() {
@@ -110,29 +124,72 @@
     }
   }
 
-  function toCount(value, fallback) {
-    var num = Number(value);
-    return isFinite(num) && num >= 0 ? num : (Number(fallback) || 0);
+  /* 演示基数只在首次加载时为原始素材生成一次，之后永远读取本地保存值 */
+  function getSeedStats() {
+    var seeds = readJSON(SEED_STATS_KEY, {});
+    if (!seeds || typeof seeds !== 'object' || Array.isArray(seeds)) return {};
+    return seeds;
   }
 
-  function applyStats(material, stats) {
+  function saveSeedStats(seeds) {
+    try {
+      global.localStorage.setItem(SEED_STATS_KEY, JSON.stringify(seeds));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function ensureSeedStats(originals) {
+    var seeds = getSeedStats();
+    var changed = false;
+
+    (originals || []).forEach(function (material) {
+      if (!material || material.id == null) return;
+      var key = String(material.id);
+      var entry = seeds[key];
+
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        var normalizedViews = toCount(entry.views, 0);
+        var normalizedDownloads = toCount(entry.downloads, 0);
+        if (normalizedDownloads > normalizedViews) normalizedDownloads = normalizedViews;
+        if (entry.views !== normalizedViews || entry.downloads !== normalizedDownloads) {
+          seeds[key] = { views: normalizedViews, downloads: normalizedDownloads };
+          changed = true;
+        }
+        return;
+      }
+
+      var views = randomInt(SEED_VIEWS_MIN, SEED_VIEWS_MAX);
+      var downloads = randomInt(SEED_DOWNLOADS_MIN, SEED_DOWNLOADS_MAX);
+      if (downloads > views) downloads = views;
+      seeds[key] = { views: views, downloads: downloads };
+      changed = true;
+    });
+
+    if (changed) saveSeedStats(seeds);
+    return seeds;
+  }
+
+  function applyStats(material, stats, seeds) {
     var copy = cloneMaterial(material);
-    var entry = stats[String(material.id)];
-    copy.views = entry && entry.views != null
-      ? toCount(entry.views, material.views)
-      : toCount(material.views, 0);
-    copy.downloads = entry && entry.downloads != null
-      ? toCount(entry.downloads, material.downloads)
-      : toCount(material.downloads, 0);
+    var key = String(material.id);
+    var entry = stats[key] && typeof stats[key] === 'object' ? stats[key] : {};
+    var seed = seeds[key] && typeof seeds[key] === 'object' ? seeds[key] : {};
+
+    copy.views = toCount(seed.views, 0) + toCount(entry.views, 0);
+    copy.downloads = toCount(seed.downloads, 0) + toCount(entry.downloads, 0);
     return copy;
   }
 
   function getAllMaterials() {
     var stats = getStats();
-    return getOriginalMaterials()
+    var originals = getOriginalMaterials();
+    var seeds = ensureSeedStats(originals);
+    return originals
       .concat(getCustomMaterials())
       .map(function (material) {
-        return applyStats(material, stats);
+        return applyStats(material, stats, seeds);
       });
   }
 
@@ -145,7 +202,7 @@
     return null;
   }
 
-  function incrementStat(id, field, baseValue) {
+  function incrementStat(id, field) {
     if (field !== 'views' && field !== 'downloads') {
       return null;
     }
@@ -154,10 +211,36 @@
     var key = String(id);
     var entry = stats[key] && typeof stats[key] === 'object' ? stats[key] : {};
 
-    entry[field] = toCount(entry[field], baseValue) + 1;
+    entry[field] = toCount(entry[field], 0) + 1;
     stats[key] = entry;
     saveStats(stats);
-    return entry;
+
+    var material = getMaterialById(id);
+    return {
+      views: material ? material.views : 0,
+      downloads: material ? material.downloads : 0,
+      increment: entry[field]
+    };
+  }
+
+  /* 删除投稿时同步清理运行时增量与演示基数记录 */
+  function clearMaterialStats(id) {
+    var key = String(id);
+    var stats = getStats();
+    if (Object.prototype.hasOwnProperty.call(stats, key)) {
+      delete stats[key];
+      saveStats(stats);
+    }
+
+    var seeds = getSeedStats();
+    if (Object.prototype.hasOwnProperty.call(seeds, key)) {
+      delete seeds[key];
+      saveSeedStats(seeds);
+    }
+  }
+
+  function getHeatScore(material) {
+    return toCount(material && material.views, 0) + toCount(material && material.downloads, 0) * 2;
   }
 
   function clearCustomMaterials() {
@@ -657,6 +740,7 @@
   global.HongseFront = {
     CUSTOM_KEY: CUSTOM_KEY,
     STATS_KEY: STATS_KEY,
+    SEED_STATS_KEY: SEED_STATS_KEY,
     getOriginalMaterials: getOriginalMaterials,
     getCustomMaterials: getCustomMaterials,
     saveCustomMaterials: saveCustomMaterials,
@@ -664,9 +748,12 @@
     nextCustomId: nextCustomId,
     getStats: getStats,
     saveStats: saveStats,
+    getSeedStats: getSeedStats,
     getAllMaterials: getAllMaterials,
     getMaterialById: getMaterialById,
     incrementStat: incrementStat,
+    clearMaterialStats: clearMaterialStats,
+    getHeatScore: getHeatScore,
     clearCustomMaterials: clearCustomMaterials,
     resolveMaterialCover: resolveMaterialCover,
     buildMaterialDocHtml: buildMaterialDocHtml,

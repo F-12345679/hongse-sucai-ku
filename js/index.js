@@ -1,12 +1,15 @@
 /* ============================================
-   素材首页脚本 · 第三阶段
-   素材渲染 + 搜索筛选排序 + 本地投稿
+   素材首页脚本
+   多字段检索 + 相关度排序 + 热度 TOP5 + 素材墙
    ============================================ */
 (function () {
   'use strict';
 
   var FILTER_KEY = 'hongse_index_filters_v1';
   var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+  var EYE_ICON = '<svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.4"/></svg>';
+  var DOWNLOAD_ICON = '<svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>';
+
   var allMaterials = [];
   var seriesList = [];
   var typeList = [];
@@ -19,13 +22,25 @@
     keyword: '',
     series: 'all',
     type: 'all',
-    permission: 'all',
     sort: 'date'
   };
 
   /* ---------- 工具函数 ---------- */
+  function normalize(text) {
+    return String(text == null ? '' : text).trim().toLowerCase();
+  }
+
+  function todayString() {
+    var now = new Date();
+    var month = String(now.getMonth() + 1);
+    var day = String(now.getDate());
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+    return now.getFullYear() + '-' + month + '-' + day;
+  }
+
   function byDateDesc(a, b) {
-    var diff = String(b.date).localeCompare(String(a.date));
+    var diff = String(b.date || '').localeCompare(String(a.date || ''));
     if (diff !== 0) return diff;
     return Number(b.id) - Number(a.id);
   }
@@ -36,6 +51,10 @@
       if (diff !== 0) return diff;
       return byDateDesc(a, b);
     };
+  }
+
+  function heatOf(material) {
+    return (Number(material.views) || 0) + (Number(material.downloads) || 0) * 2;
   }
 
   function uniqueValues(list, key) {
@@ -61,36 +80,28 @@
     return result;
   }
 
-  function normalize(text) {
-    return String(text == null ? '' : text).toLowerCase();
-  }
-
-  function todayString() {
-    var now = new Date();
-    var month = String(now.getMonth() + 1);
-    var day = String(now.getDate());
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-    return now.getFullYear() + '-' + month + '-' + day;
-  }
-
   function refreshDataSource() {
     allMaterials = window.HongseFront.getAllMaterials();
   }
 
-  /* ---------- 筛选状态读写 ---------- */
+  function goDetail(id) {
+    saveState();
+    window.location.href = 'detail.html?id=' + encodeURIComponent(id);
+  }
+
+  /* ---------- 筛选状态读写（localStorage 持久化） ---------- */
   function saveState() {
     try {
-      sessionStorage.setItem(FILTER_KEY, JSON.stringify(state));
+      window.localStorage.setItem(FILTER_KEY, JSON.stringify(state));
     } catch (err) {
-      /* sessionStorage 不可用时忽略，不影响页面使用 */
+      /* 本地存储不可用时忽略，不影响页面使用 */
     }
   }
 
   function loadState() {
     var raw;
     try {
-      raw = sessionStorage.getItem(FILTER_KEY);
+      raw = window.localStorage.getItem(FILTER_KEY);
     } catch (err) {
       raw = null;
     }
@@ -111,10 +122,8 @@
     if (saved.type && (saved.type === 'all' || typeList.indexOf(saved.type) !== -1)) {
       state.type = saved.type;
     }
-    if (saved.permission === 'all' || saved.permission === 'public') {
-      state.permission = saved.permission;
-    }
-    if (saved.sort === 'date' || saved.sort === 'views' || saved.sort === 'downloads') {
+    if (saved.sort === 'date' || saved.sort === 'views' ||
+        saved.sort === 'downloads' || saved.sort === 'relevance') {
       state.sort = saved.sort;
     }
   }
@@ -123,7 +132,6 @@
     document.getElementById('search-input').value = state.keyword;
     document.getElementById('filter-series').value = state.series;
     document.getElementById('filter-type').value = state.type;
-    document.getElementById('filter-permission').value = state.permission;
     document.getElementById('filter-sort').value = state.sort;
 
     var tabs = document.querySelectorAll('.series-tab');
@@ -132,14 +140,22 @@
     });
   }
 
-  /* ---------- 渲染筛选项、系列标签、系列候选 ---------- */
+  function resetState() {
+    justAddedId = null;
+    state.keyword = '';
+    state.series = 'all';
+    state.type = 'all';
+    state.sort = 'date';
+    document.getElementById('search-input').value = '';
+  }
+
+  /* ---------- 渲染筛选项、系列标签 ---------- */
   function renderFilterOptions() {
     seriesList = uniqueValues(allMaterials, 'series');
     typeList = uniqueTypes(allMaterials);
 
     var seriesSelect = document.getElementById('filter-series');
     seriesSelect.textContent = '';
-
     var allSeries = document.createElement('option');
     allSeries.value = 'all';
     allSeries.textContent = '全部系列';
@@ -154,7 +170,6 @@
 
     var typeSelect = document.getElementById('filter-type');
     typeSelect.textContent = '';
-
     var allTypes = document.createElement('option');
     allTypes.value = 'all';
     allTypes.textContent = '全部类型';
@@ -212,59 +227,47 @@
     });
   }
 
-  /* ---------- 最新素材提示 ---------- */
-  function renderLatest() {
-    var link = document.getElementById('latest-link');
-    if (!allMaterials.length) {
-      link.textContent = '暂无素材';
-      link.removeAttribute('href');
-      return;
-    }
+  /* ---------- 多字段检索：标题 > 标签/系列 > 作者/地点 > 简介 ---------- */
+  function relevanceScore(material, keyword) {
+    if (!keyword) return 0;
 
-    var latest = allMaterials.slice().sort(byDateDesc)[0];
-    link.href = 'detail.html?id=' + encodeURIComponent(latest.id);
-    link.textContent = '《' + latest.title + '》 · ' + latest.author + ' · ' + latest.date;
-  }
-
-  /* ---------- 搜索、筛选、排序 ---------- */
-  function matchKeyword(material, keyword) {
-    if (!keyword) return true;
-    var haystack = [
-      material.title,
-      material.author,
-      material.location,
-      material.series,
-      (material.tags || []).join(' '),
-      material.intro
-    ].map(normalize).join(' ');
-    return haystack.indexOf(keyword) !== -1;
+    var score = 0;
+    if (normalize(material.title).indexOf(keyword) !== -1) score += 100;
+    if (normalize((material.tags || []).join(' ')).indexOf(keyword) !== -1) score += 60;
+    if (normalize(material.series).indexOf(keyword) !== -1) score += 55;
+    if (normalize(material.author).indexOf(keyword) !== -1) score += 42;
+    if (normalize(material.authorRole).indexOf(keyword) !== -1) score += 36;
+    if (normalize(material.location).indexOf(keyword) !== -1) score += 34;
+    if (normalize((material.type || []).join(' ')).indexOf(keyword) !== -1) score += 22;
+    if (normalize(material.intro).indexOf(keyword) !== -1) score += 12;
+    return score;
   }
 
   function filterMaterials() {
-    var keyword = normalize(state.keyword.trim());
+    var keyword = normalize(state.keyword);
 
     return allMaterials.filter(function (material) {
-      if (!matchKeyword(material, keyword)) return false;
-
+      if (keyword && relevanceScore(material, keyword) === 0) return false;
       if (state.series !== 'all' && material.series !== state.series) return false;
-
       if (state.type !== 'all' && (material.type || []).indexOf(state.type) === -1) return false;
-
-      /* 当前没有账号权限体系，全部素材均按公开素材处理 */
-      if (state.permission === 'public' && material.permission && material.permission !== 'public') {
-        return false;
-      }
-
       return true;
     });
   }
 
   function sortMaterials(list) {
     var sorted = list.slice();
+    var keyword = normalize(state.keyword);
+
     if (state.sort === 'views') {
       sorted.sort(byNumberDesc('views'));
     } else if (state.sort === 'downloads') {
       sorted.sort(byNumberDesc('downloads'));
+    } else if (state.sort === 'relevance') {
+      sorted.sort(function (a, b) {
+        var diff = relevanceScore(b, keyword) - relevanceScore(a, keyword);
+        if (diff !== 0) return diff;
+        return byDateDesc(a, b);
+      });
     } else {
       sorted.sort(byDateDesc);
     }
@@ -285,102 +288,217 @@
     return sorted;
   }
 
-  /* ---------- 卡片渲染 ---------- */
-  function buildTag(tagText) {
+  /* ---------- 公共小组件 ---------- */
+  function buildTag(tagText, className) {
     var tag = document.createElement('span');
-    tag.className = 'tag';
+    tag.className = className || 'tag';
     tag.textContent = tagText;
     return tag;
   }
 
+  function buildStats(views, downloads, className) {
+    var wrap = document.createElement('div');
+    wrap.className = className || 'stats-line';
+
+    var viewSpan = document.createElement('span');
+    viewSpan.className = 'stat-item';
+    viewSpan.innerHTML = EYE_ICON;
+    viewSpan.appendChild(document.createTextNode('浏览 ' + (views || 0)));
+    wrap.appendChild(viewSpan);
+
+    var downloadSpan = document.createElement('span');
+    downloadSpan.className = 'stat-item';
+    downloadSpan.innerHTML = DOWNLOAD_ICON;
+    downloadSpan.appendChild(document.createTextNode('下载 ' + (downloads || 0)));
+    wrap.appendChild(downloadSpan);
+
+    return wrap;
+  }
+
+  function shortIntro(text, length) {
+    var value = String(text || '').replace(/\s+/g, ' ').trim();
+    if (value.length <= length) return value;
+    return value.slice(0, length) + '……';
+  }
+
+  function buildRankBadge(rank) {
+    var badge = document.createElement('span');
+    badge.className = 'rank-badge' + (rank === 1 ? ' rank-gold' : '');
+    badge.textContent = 'TOP ' + rank;
+    return badge;
+  }
+
+  function attachOpenHandler(node, id) {
+    node.tabIndex = 0;
+    node.setAttribute('role', 'link');
+    node.addEventListener('click', function () {
+      goDetail(id);
+    });
+    node.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        goDetail(id);
+      }
+    });
+  }
+
+  /* ---------- 热度 TOP5 ---------- */
+  function buildTop5Main(material) {
+    var card = document.createElement('article');
+    card.className = 'top5-main';
+    attachOpenHandler(card, material.id);
+    card.setAttribute('aria-label', '热度第一名：' + material.title);
+
+    var coverWrap = document.createElement('div');
+    coverWrap.className = 'top5-main-cover';
+    var cover = document.createElement('img');
+    cover.src = material.cover;
+    cover.alt = material.title;
+    coverWrap.appendChild(cover);
+    coverWrap.appendChild(buildRankBadge(1));
+    card.appendChild(coverWrap);
+
+    var body = document.createElement('div');
+    body.className = 'top5-main-body';
+
+    var title = document.createElement('h3');
+    title.className = 'top5-main-title';
+    title.textContent = material.title;
+    body.appendChild(title);
+
+    var intro = document.createElement('p');
+    intro.className = 'top5-main-intro';
+    intro.textContent = shortIntro(material.intro, 130);
+    body.appendChild(intro);
+
+    var location = document.createElement('p');
+    location.className = 'top5-main-location';
+    location.textContent = '地点：' + (material.location || '—');
+    body.appendChild(location);
+
+    body.appendChild(buildStats(material.views, material.downloads, 'stats-line top5-main-stats'));
+    card.appendChild(body);
+
+    return card;
+  }
+
+  function buildTop5Mini(material, rank) {
+    var card = document.createElement('article');
+    card.className = 'top5-mini ' + (rank === 2 || rank === 4 ? 'top5-mini--near' : 'top5-mini--far');
+    attachOpenHandler(card, material.id);
+    card.setAttribute('aria-label', '热度第' + rank + '名：' + material.title);
+
+    var coverWrap = document.createElement('div');
+    coverWrap.className = 'top5-mini-cover';
+    var cover = document.createElement('img');
+    cover.src = material.cover;
+    cover.alt = material.title;
+    cover.loading = 'lazy';
+    coverWrap.appendChild(cover);
+    coverWrap.appendChild(buildRankBadge(rank));
+    card.appendChild(coverWrap);
+
+    var body = document.createElement('div');
+    body.className = 'top5-mini-body';
+
+    var title = document.createElement('h3');
+    title.className = 'top5-mini-title';
+    title.textContent = material.title;
+    body.appendChild(title);
+
+    body.appendChild(buildStats(material.views, material.downloads, 'stats-line top5-mini-stats'));
+    card.appendChild(body);
+
+    return card;
+  }
+
+  function renderTop5() {
+    var left = document.getElementById('top5-left');
+    var center = document.getElementById('top5-center');
+    var right = document.getElementById('top5-right');
+    if (!left || !center || !right) return;
+
+    left.textContent = '';
+    center.textContent = '';
+    right.textContent = '';
+
+    var top = allMaterials.slice().sort(function (a, b) {
+      var diff = heatOf(b) - heatOf(a);
+      if (diff !== 0) return diff;
+      return byDateDesc(a, b);
+    }).slice(0, 5);
+
+    if (!top.length) {
+      var empty = document.createElement('p');
+      empty.className = 'top5-empty';
+      empty.textContent = '暂无素材，敬请期待。';
+      center.appendChild(empty);
+      return;
+    }
+
+    center.appendChild(buildTop5Main(top[0]));
+    if (top[1]) left.appendChild(buildTop5Mini(top[1], 2));
+    if (top[2]) left.appendChild(buildTop5Mini(top[2], 3));
+    if (top[3]) right.appendChild(buildTop5Mini(top[3], 4));
+    if (top[4]) right.appendChild(buildTop5Mini(top[4], 5));
+  }
+
+  /* ---------- 全部素材卡片 ---------- */
   function buildCard(material) {
     var card = document.createElement('article');
     card.className = 'card material-card';
-    card.tabIndex = 0;
-    card.setAttribute('role', 'link');
+    attachOpenHandler(card, material.id);
     card.setAttribute('aria-label', '查看素材：' + material.title);
 
-    function openDetail() {
-      saveState();
-      window.location.href = 'detail.html?id=' + encodeURIComponent(material.id);
-    }
-
-    card.addEventListener('click', openDetail);
-    card.addEventListener('keydown', function (event) {
-      if (event.target !== card) return;
-      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
-        event.preventDefault();
-        openDetail();
-      }
-    });
-
+    var coverWrap = document.createElement('div');
+    coverWrap.className = 'cover-wrap';
     var cover = document.createElement('img');
     cover.className = 'cover';
     cover.src = material.cover;
     cover.alt = material.title;
     cover.loading = 'lazy';
-    card.appendChild(cover);
+    coverWrap.appendChild(cover);
+    card.appendChild(coverWrap);
 
     var info = document.createElement('div');
     info.className = 'info';
 
-    var series = document.createElement('span');
-    series.className = 'card-series';
-    series.textContent = material.series || '未分类';
-    info.appendChild(series);
-
-    var title = document.createElement('div');
+    var title = document.createElement('h3');
     title.className = 'card-title';
     title.textContent = material.title;
     info.appendChild(title);
 
+    var author = document.createElement('p');
+    author.className = 'card-author';
+    author.textContent = (material.author || '佚名') +
+      (material.authorRole ? ' · ' + material.authorRole : '');
+    info.appendChild(author);
+
+    var location = document.createElement('p');
+    location.className = 'card-meta-line';
+    location.textContent = '地点：' + (material.location || '—');
+    info.appendChild(location);
+
+    var date = document.createElement('p');
+    date.className = 'card-meta-line';
+    date.textContent = '日期：' + (material.date || '—');
+    info.appendChild(date);
+
     var tags = document.createElement('div');
     tags.className = 'tags';
-    (material.tags || []).forEach(function (tagText) {
+    (material.type || []).forEach(function (typeText) {
+      tags.appendChild(buildTag(typeText, 'type-tag'));
+    });
+    (material.tags || []).slice(0, 3).forEach(function (tagText) {
       tags.appendChild(buildTag(tagText));
     });
     info.appendChild(tags);
 
-    var meta = document.createElement('div');
-    meta.className = 'meta';
+    var stats = buildStats(material.views, material.downloads);
+    stats.classList.add('card-stats');
+    info.appendChild(stats);
 
-    var views = document.createElement('span');
-    views.textContent = '浏览 ' + (material.views || 0);
-    meta.appendChild(views);
-
-    var downloads = document.createElement('span');
-    downloads.textContent = '下载 ' + (material.downloads || 0);
-    meta.appendChild(downloads);
-
-    var api = window.HongseFront;
-    var canDownload = api && typeof api.canDownloadMaterial === 'function'
-      ? api.canDownloadMaterial(material)
-      : !!material.doc;
-    if (canDownload) {
-      var downloadBtn = document.createElement('button');
-      downloadBtn.type = 'button';
-      downloadBtn.className = 'card-download';
-      downloadBtn.textContent = '下载';
-      downloadBtn.setAttribute('aria-label', '下载素材：' + material.title);
-      downloadBtn.addEventListener('click', function (event) {
-        event.stopPropagation();
-        var entry = api && typeof api.incrementStat === 'function'
-          ? api.incrementStat(material.id, 'downloads', material.downloads)
-          : null;
-        if (entry) {
-          material.downloads = entry.downloads;
-          downloads.textContent = '下载 ' + entry.downloads;
-        }
-        if (api && typeof api.downloadMaterial === 'function') {
-          api.downloadMaterial(material);
-        }
-      });
-      meta.appendChild(downloadBtn);
-    }
-
-    info.appendChild(meta);
     card.appendChild(info);
-
     return card;
   }
 
@@ -402,6 +520,7 @@
 
   function update() {
     syncControls();
+    renderTop5();
     renderResults();
     saveState();
   }
@@ -573,6 +692,7 @@
       cover: pendingCover,
       audio: '',
       doc: '',
+      createdAt: new Date().toISOString(),
       views: 0,
       downloads: 0
     };
@@ -588,14 +708,8 @@
     renderFilterOptions();
     renderSeriesTabs();
     populateSeriesOptions();
-    renderLatest();
 
-    state.keyword = '';
-    state.series = 'all';
-    state.type = 'all';
-    state.permission = 'all';
-    state.sort = 'date';
-    document.getElementById('search-input').value = '';
+    resetState();
     justAddedId = material.id;
     update();
 
@@ -605,19 +719,23 @@
   /* ---------- 事件绑定 ---------- */
   function bindEvents() {
     var searchInput = document.getElementById('search-input');
+    var searchForm = document.getElementById('search-form');
 
-    function doSearch() {
+    function applySearch() {
       justAddedId = null;
       state.keyword = searchInput.value.trim();
+
+      if (!state.keyword) {
+        if (state.sort === 'relevance') state.sort = 'date';
+      } else if (state.sort === 'date') {
+        state.sort = 'relevance';
+      }
       update();
     }
 
-    document.getElementById('search-btn').addEventListener('click', doSearch);
-    searchInput.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        doSearch();
-      }
+    searchForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      applySearch();
     });
 
     document.getElementById('filter-series').addEventListener('change', function () {
@@ -631,13 +749,6 @@
       justAddedId = null;
       state.keyword = searchInput.value.trim();
       state.type = this.value;
-      update();
-    });
-
-    document.getElementById('filter-permission').addEventListener('change', function () {
-      justAddedId = null;
-      state.keyword = searchInput.value.trim();
-      state.permission = this.value;
       update();
     });
 
@@ -657,22 +768,14 @@
       update();
     });
 
-    document.getElementById('reset-btn').addEventListener('click', function () {
-      justAddedId = null;
-      state.keyword = '';
-      state.series = 'all';
-      state.type = 'all';
-      state.permission = 'all';
-      state.sort = 'date';
-      searchInput.value = '';
+    function resetAll() {
+      resetState();
       update();
-    });
+    }
 
-    document.getElementById('latest-link').addEventListener('click', function () {
-      saveState();
-    });
+    document.getElementById('reset-btn').addEventListener('click', resetAll);
+    document.getElementById('empty-reset').addEventListener('click', resetAll);
 
-    document.getElementById('submit-btn').addEventListener('click', openModal);
     document.getElementById('nav-submit').addEventListener('click', openModal);
   }
 
@@ -704,19 +807,18 @@
   populateSeriesOptions();
   loadState();
   syncControls();
-  renderLatest();
+  renderTop5();
   renderResults();
   bindEvents();
   bindModal();
 
-  /* 从详情页后退时若页面来自 bfcache，重新读取统计数据并保持筛选状态 */
-  window.addEventListener('pageshow', function (event) {
-    if (!event.persisted) return;
+  /* 从详情页返回时重新读取统计与筛选状态 */
+  window.addEventListener('pageshow', function () {
     refreshDataSource();
     renderFilterOptions();
     renderSeriesTabs();
     populateSeriesOptions();
-    renderLatest();
+    loadState();
     update();
   });
 })();

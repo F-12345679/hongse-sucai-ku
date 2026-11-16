@@ -5,112 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>素材详情 · 红色文化数字基因库</title>
   <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/detail.css">
 </head>
-<body style="padding:24px 32px;max-width:900px;margin:0 auto;">
-  <p><a href="index.html" style="color:var(--main-red);text-decoration:none;">← 返回素材首页</a></p>
-
-  <div class="card" id="detail-content" style="margin-top:16px;overflow:hidden;">
-    <img id="cover" style="width:100%;max-height:380px;object-fit:cover;" alt="">
-    <div style="padding:24px;">
-      <h1 id="title" style="font-size:var(--font-title);margin-bottom:12px;"></h1>
-      <p id="meta" style="color:var(--text-sub);font-size:var(--font-tag);margin-bottom:16px;"></p>
-      <div id="tags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;"></div>
-      <div id="intro" style="line-height:1.9;white-space:pre-line;"></div>
-      <!-- 音频（仅有音频的素材显示） -->
-      <div id="audio-box" style="margin-top:20px;display:none;">
-        <audio id="audio" controls style="width:100%;"></audio>
-      </div>
-      <div style="margin-top:24px;display:flex;gap:12px;">
-        <button class="btn btn-red" id="download-btn" type="button" hidden>下载素材</button>
-        <button class="btn btn-gold" type="button" onclick="location.href='index.html'">返回素材首页</button>
-      </div>
+<body class="detail-body">
+  <header class="top-bar site-header">
+    <div class="top-bar-inner">
+      <a class="logo" href="index.html" aria-label="红色文化数字基因库首页">
+        <span class="logo-mark" aria-hidden="true">★</span>
+        <span class="logo-text">红色文化数字基因库</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="index.html">首页</a>
+        <a href="admin.html">后台看板</a>
+        <a href="admin-materials.html">素材管理</a>
+      </nav>
     </div>
-  </div>
+  </header>
 
-  <div class="card" id="not-found" style="margin-top:16px;padding:56px 24px;text-align:center;" hidden>
-    <h1 style="font-size:var(--font-title);margin-bottom:12px;">未找到该素材</h1>
-    <p style="color:var(--text-sub);margin-bottom:24px;">该素材可能不存在，或已被移除。</p>
-    <button class="btn btn-red" type="button" onclick="location.href='index.html'">返回素材首页</button>
-  </div>
+  <main class="detail-page">
+    <a class="back-link" id="back-link" href="index.html">← 返回素材首页</a>
+
+    <section id="detail-content" class="detail-card" hidden>
+      <div class="detail-grid">
+        <div class="detail-left">
+          <div class="detail-cover">
+            <img id="cover" alt="">
+          </div>
+
+          <div class="detail-actions">
+            <div id="audio-box" class="audio-box" hidden>
+              <p class="audio-label">音频资料</p>
+              <audio id="audio" controls preload="metadata"></audio>
+            </div>
+            <div class="action-buttons">
+              <button class="btn btn-red" id="download-btn" type="button" hidden>下载文档</button>
+              <a class="btn btn-outline" href="index.html">返回首页</a>
+            </div>
+            <p id="download-hint" class="download-hint" hidden></p>
+          </div>
+        </div>
+
+        <div class="detail-right">
+          <h1 id="title" class="detail-title"></h1>
+
+          <p id="author-line" class="detail-author"></p>
+
+          <div class="detail-meta" id="detail-meta"></div>
+
+          <div id="tags" class="detail-tags"></div>
+
+          <div id="intro" class="detail-intro"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="related-section" class="related-section" hidden>
+      <div class="section-head">
+        <h2>相关素材</h2>
+        <span class="section-note">根据系列与标签推荐</span>
+      </div>
+      <div id="related-grid" class="related-grid"></div>
+    </section>
+
+    <section id="not-found" class="not-found" hidden>
+      <h1>未找到该素材</h1>
+      <p>该素材可能不存在，或已被移除。</p>
+      <a class="btn btn-red" href="index.html">返回素材首页</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">红色文化数字基因库 · 素材详情</footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
-  <script>
-    (function () {
-      'use strict';
-
-      var params = new URLSearchParams(window.location.search);
-      var rawId = params.get('id');
-      var id = rawId == null ? '' : rawId.trim();
-      var material = id ? window.HongseFront.getMaterialById(id) : null;
-
-      var content = document.getElementById('detail-content');
-      var notFound = document.getElementById('not-found');
-
-      if (!material) {
-        content.hidden = true;
-        notFound.hidden = false;
-        document.title = '未找到该素材 · 红色文化数字基因库';
-        return;
-      }
-
-      document.title = material.title + ' · 红色文化数字基因库';
-
-      var cover = document.getElementById('cover');
-      cover.src = material.cover;
-      cover.alt = material.title;
-
-      document.getElementById('title').textContent = material.title;
-
-      function renderMeta() {
-        var metaParts = [
-          '系列：' + (material.series || '未分类'),
-          '类型：' + ((material.type && material.type.length) ? material.type.join('、') : '—'),
-          '公开素材'
-        ];
-        if (material.author) {
-          metaParts.push('供稿人：' + material.author + (material.authorRole ? '（' + material.authorRole + '）' : ''));
-        }
-        if (material.location) metaParts.push('地点：' + material.location);
-        if (material.date) metaParts.push('日期：' + material.date);
-        metaParts.push('浏览 ' + (material.views || 0));
-        metaParts.push('下载 ' + (material.downloads || 0));
-        document.getElementById('meta').textContent = metaParts.join('　');
-      }
-
-      var viewEntry = window.HongseFront.incrementStat(material.id, 'views', material.views);
-      if (viewEntry) material.views = viewEntry.views;
-      renderMeta();
-
-      var tagsBox = document.getElementById('tags');
-      tagsBox.textContent = '';
-      (material.tags || []).forEach(function (tagText) {
-        var tag = document.createElement('span');
-        tag.className = 'tag';
-        tag.textContent = tagText;
-        tagsBox.appendChild(tag);
-      });
-
-      document.getElementById('intro').textContent = material.intro || '';
-
-      if (material.audio) {
-        document.getElementById('audio-box').style.display = 'block';
-        document.getElementById('audio').src = material.audio;
-      }
-
-      var downloadBtn = document.getElementById('download-btn');
-      if (window.HongseFront.canDownloadMaterial(material)) {
-        downloadBtn.hidden = false;
-        downloadBtn.addEventListener('click', function () {
-          var downloadEntry = window.HongseFront.incrementStat(material.id, 'downloads', material.downloads);
-          if (downloadEntry) {
-            material.downloads = downloadEntry.downloads;
-            renderMeta();
-          }
-          window.HongseFront.downloadMaterial(material);
-        });
-      }
-    })();
-  </script>
+  <script src="js/detail.js"></script>
 </body>
 </html>

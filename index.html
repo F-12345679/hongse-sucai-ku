@@ -3,38 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>素材首页 · 红色文化数字基因库</title>
+  <title>首页 · 红色文化数字基因库</title>
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/index.css">
 </head>
 <body>
-  <!-- 顶部导航 -->
-  <header class="top-bar">
-    <div class="logo">★ 红色文化数字基因库</div>
-    <nav class="nav">
-      <a href="index.html" class="active">素材首页</a>
-      <a href="javascript:;" class="nav-placeholder" aria-disabled="true" title="暂未开放">排行榜</a>
-      <a href="javascript:;" id="nav-submit" title="提交素材投稿">素材投稿</a>
-      <a href="javascript:;" class="nav-placeholder" aria-disabled="true" title="暂未开放">我的投稿</a>
-      <a href="admin.html">管理员后台</a>
-    </nav>
+  <!-- 顶部红色实底导航（吸顶） -->
+  <header class="top-bar site-header">
+    <div class="top-bar-inner">
+      <a class="logo" href="index.html" aria-label="红色文化数字基因库首页">
+        <span class="logo-mark" aria-hidden="true">★</span>
+        <span class="logo-text">红色文化数字基因库</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="index.html" class="active" aria-current="page">首页</a>
+        <a href="javascript:;" id="nav-submit" title="提交素材投稿">素材投稿</a>
+        <a href="admin.html">后台看板</a>
+        <a href="admin-materials.html">素材管理</a>
+      </nav>
+    </div>
   </header>
 
   <main class="page">
     <!-- 搜索区 -->
-    <section class="search-panel">
-      <div class="search-row">
-        <input id="search-input" class="search-input" type="search"
-               placeholder="关键词检索：素材名称、供稿人、标签……" autocomplete="off">
-        <button id="search-btn" class="btn btn-red" type="button">搜索素材</button>
-        <button id="submit-btn" class="btn btn-green" type="button">＋ 提交素材投稿</button>
+    <section class="hero-search" aria-labelledby="hero-title">
+      <div class="hero-decor" aria-hidden="true">
+        <svg viewBox="0 0 1440 520" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <linearGradient id="heroRidge" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#b3131b" stop-opacity=".16"/>
+              <stop offset=".5" stop-color="#d9a441" stop-opacity=".10"/>
+              <stop offset="1" stop-color="#8c0d14" stop-opacity=".14"/>
+            </linearGradient>
+          </defs>
+          <path opacity=".06" fill="#8c0d14" d="M0 330 L120 248 L260 318 L390 226 L520 322 L680 260 L820 336 L980 230 L1120 318 L1270 252 L1440 334 L1440 520 L0 520 Z"/>
+          <path opacity=".08" fill="url(#heroRidge)" d="M0 392 L170 318 L320 382 L470 292 L620 386 L780 326 L930 392 L1090 300 L1240 380 L1370 316 L1440 386 L1440 520 L0 520 Z"/>
+          <g opacity=".08" fill="#8c0d14">
+            <path d="M70 430 h92 v-18 h18 v18 h64 v-18 h18 v18 h92 v18 h-284 Z"/>
+            <path d="M1040 414 h84 v-16 h16 v16 h58 v-16 h16 v16 h86 v18 h-260 Z"/>
+          </g>
+          <g opacity=".1" fill="#b3131b">
+            <rect x="1268" y="214" width="5" height="150" rx="2"/>
+            <path d="M1273 218 L1342 232 L1273 252 Z"/>
+          </g>
+          <g opacity=".07" fill="#8c0d14">
+            <rect x="1126" y="246" width="18" height="126" rx="3"/>
+            <path d="M1112 372 h46 v18 h-46 Z"/>
+          </g>
+          <g opacity=".05" fill="#8c0d14">
+            <circle cx="302" cy="382" r="10"/>
+            <circle cx="330" cy="386" r="10"/>
+            <circle cx="358" cy="382" r="10"/>
+            <path d="M286 420 q16 -24 32 0 v34 h-32 Z"/>
+            <path d="M314 424 q16 -24 32 0 v30 h-32 Z"/>
+            <path d="M342 420 q16 -24 32 0 v34 h-32 Z"/>
+          </g>
+        </svg>
       </div>
+      <h1 id="hero-title" class="hero-title">红色文化数字基因库</h1>
+      <p class="hero-subtitle-main">传承红色基因 赓续精神血脉</p>
+      <p class="hero-subtitle-sub">挖掘红色资源 · 讲好红色故事 · 弘扬红色精神</p>
+      <form id="search-form" class="search-box" role="search" autocomplete="off">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m16.5 16.5 4 4"></path>
+        </svg>
+        <input id="search-input" class="search-input" type="search"
+               placeholder="检索标题、简介、标签、系列、地点、供稿人……" aria-label="检索素材">
+        <button id="search-btn" class="btn btn-red" type="submit">搜索素材</button>
+      </form>
     </section>
 
-    <!-- 最新素材提示 -->
-    <section class="latest-bar" aria-label="最新素材">
-      <span class="latest-label">最新入库</span>
-      <a id="latest-link" class="latest-link" href="index.html"></a>
+    <!-- 热度 TOP5 分层展示 -->
+    <section class="top5-section" aria-labelledby="top5-title">
+      <div class="section-head">
+        <h2 id="top5-title">馆藏热度 TOP5</h2>
+      </div>
+      <div id="top5-layout" class="top5-layout" aria-live="polite">
+        <div class="top5-side" id="top5-left"></div>
+        <div class="top5-center" id="top5-center"></div>
+        <div class="top5-side" id="top5-right"></div>
+      </div>
     </section>
 
     <!-- 筛选区 -->
@@ -48,15 +98,9 @@
         <select id="filter-type" class="filter-select"></select>
       </div>
       <div class="filter-field">
-        <label for="filter-permission">素材权限</label>
-        <select id="filter-permission" class="filter-select">
-          <option value="all">全部权限</option>
-          <option value="public">公开素材</option>
-        </select>
-      </div>
-      <div class="filter-field">
         <label for="filter-sort">排序方式</label>
         <select id="filter-sort" class="filter-select">
+          <option value="relevance">相关度</option>
           <option value="date">最新上传</option>
           <option value="views">浏览量</option>
           <option value="downloads">下载量</option>
@@ -70,16 +114,43 @@
     <!-- 系列快捷标签 -->
     <section id="series-tabs" class="series-tabs" aria-label="系列快捷筛选"></section>
 
-    <!-- 卡片墙 -->
+    <!-- 全部素材墙 -->
     <div class="grid-head">
-      <h2>社区素材展示区</h2>
+      <h2>全部素材</h2>
       <span id="result-count" class="result-count"></span>
     </div>
     <section id="material-grid" class="material-grid" aria-live="polite"></section>
-    <p id="empty-state" class="empty-state" hidden>暂无匹配素材</p>
+    <div id="empty-state" class="empty-state" hidden>
+      <p class="empty-title">暂无匹配素材</p>
+      <p class="empty-desc">请尝试更换关键词，或重置筛选条件后重新浏览。</p>
+      <button id="empty-reset" class="btn btn-outline" type="button">重置筛选</button>
+    </div>
   </main>
 
-  <footer class="site-footer">红色文化数字基因库 · 社区素材展示</footer>
+  <footer class="footer-banner" aria-label="底部横幅">
+    <svg class="banner-shape" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="bannerGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a50f17"/>
+          <stop offset=".55" stop-color="#8c0d14"/>
+          <stop offset="1" stop-color="#6f090f"/>
+        </linearGradient>
+        <pattern id="bannerTex" patternUnits="userSpaceOnUse" width="1440" height="120">
+          <image href="assets/images/bg/footer-banner.png" x="0" y="0" width="1440" height="120" preserveAspectRatio="xMidYMax slice" opacity=".5"/>
+        </pattern>
+      </defs>
+      <path class="banner-path"
+        d="M0,38 C160,12 320,66 480,38 C640,12 800,66 960,38 C1120,12 1280,60 1440,30 L1440,120 L0,120 Z"
+        fill="url(#bannerGrad)"/>
+      <path class="banner-path-texture"
+        d="M0,38 C160,12 320,66 480,38 C640,12 800,66 960,38 C1120,12 1280,60 1440,30 L1440,120 L0,120 Z"
+        fill="url(#bannerTex)" opacity=".5"/>
+    </svg>
+    <div class="footer-content">
+      <p class="footer-slogan">红色文化 · 永恒的精神力量</p>
+      <p class="footer-sub">铭记历史 传承未来</p>
+    </div>
+  </footer>
 
   <!-- 投稿弹窗 -->
   <div id="submit-modal" class="modal" hidden>
@@ -144,7 +215,7 @@
 
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" id="modal-cancel">取消</button>
-          <button type="submit" class="btn btn-green">确认投稿</button>
+          <button type="submit" class="btn btn-red">确认投稿</button>
         </div>
       </form>
     </div>

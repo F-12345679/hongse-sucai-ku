@@ -7,27 +7,28 @@
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
-<body class="admin-body">
-  <!-- 顶部导航 -->
+<body class="admin-body admin-locked">
   <header class="top-bar admin-top-bar">
-    <div class="logo">
-      <span class="logo-mark" aria-hidden="true">★</span>
-      <span class="logo-text">红色文化数字基因库 · 管理后台</span>
+    <div class="top-bar-inner">
+      <a class="logo" href="admin.html" aria-label="红色文化数字基因库管理后台">
+        <span class="logo-mark" aria-hidden="true">★</span>
+        <span class="logo-text">红色文化数字基因库 · 管理后台</span>
+      </a>
+      <nav class="nav admin-nav" aria-label="后台导航">
+        <a href="admin.html" class="active" aria-current="page">数据看板</a>
+        <a href="admin-materials.html">素材管理</a>
+        <a href="index.html">返回素材社区</a>
+      </nav>
     </div>
-    <nav class="nav admin-nav" aria-label="后台导航">
-      <a href="admin.html" class="active" aria-current="page">数据看板</a>
-      <a href="javascript:;" class="nav-placeholder" data-admin-notice="审核队列功能将在后续版本开放，暂不跳转页面。" aria-disabled="true" title="暂未开放">审核队列</a>
-      <a href="admin-materials.html">素材管理</a>
-      <a href="index.html">返回素材社区</a>
-      <a href="javascript:;" class="nav-placeholder" data-admin-notice="演示版免登录，无需退出。" aria-disabled="true" title="暂未开放">退出登录</a>
-    </nav>
   </header>
 
   <main class="admin-main">
-    <!-- 数据看板 -->
     <section id="dashboard" class="admin-section" aria-labelledby="dashboard-title">
       <div class="section-head">
-        <h1 id="dashboard-title">数据看板</h1>
+        <div>
+          <h1 id="dashboard-title">数据看板</h1>
+          <p class="section-desc">全部数据来自原始素材与本地投稿的实时统计</p>
+        </div>
       </div>
 
       <section class="stat-grid" aria-label="核心指标">
@@ -39,7 +40,7 @@
             </svg>
           </span>
           <div class="stat-body">
-            <p class="stat-value" id="stat-total">6</p>
+            <p class="stat-value" id="stat-total">0</p>
             <p class="stat-label">素材总数</p>
           </div>
         </article>
@@ -47,65 +48,25 @@
         <article class="stat-card">
           <span class="stat-icon icon-gold" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9"/>
-              <path d="M12 7v5l3 2"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-pending">0</p>
-            <p class="stat-label">待审核投稿</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-green" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9"/>
-              <path d="m8.5 12 2.3 2.3L16 9.5"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-stored">6</p>
-            <p class="stat-label">已入库素材</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-blue" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
               <circle cx="12" cy="12" r="2.5"/>
             </svg>
           </span>
           <div class="stat-body">
-            <p class="stat-value" id="stat-views">1550</p>
+            <p class="stat-value" id="stat-views">0</p>
             <p class="stat-label">累计浏览量</p>
           </div>
         </article>
 
         <article class="stat-card">
-          <span class="stat-icon icon-blue" aria-hidden="true">
+          <span class="stat-icon icon-warm" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>
             </svg>
           </span>
           <div class="stat-body">
-            <p class="stat-value" id="stat-downloads">470</p>
+            <p class="stat-value" id="stat-downloads">0</p>
             <p class="stat-label">累计下载量</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-gold" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="16" rx="2"/>
-              <circle cx="8.5" cy="9.5" r="1.5"/>
-              <path d="m4 17 5-5 4 4 3-3 4 4"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-missing-cover">2</p>
-            <p class="stat-label">待AI配图素材</p>
           </div>
         </article>
 
@@ -116,12 +77,27 @@
             </svg>
           </span>
           <div class="stat-body">
-            <p class="stat-value stat-value-title" id="stat-hot-title">半条被子暖人心</p>
+            <p class="stat-value stat-value-title" id="stat-hot-title">暂无数据</p>
             <p class="stat-label">当前热度冠军</p>
           </div>
         </article>
 
-        <article class="stat-card stat-card-daily">
+        <article class="stat-card">
+          <span class="stat-icon icon-gold" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="4" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+          </span>
+          <div class="stat-body">
+            <p class="stat-value" id="stat-type-count">0</p>
+            <p class="stat-label" id="stat-type-note">素材类型数量</p>
+          </div>
+        </article>
+
+        <article class="stat-card">
           <span class="stat-icon icon-red" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="5" width="18" height="16" rx="2"/>
@@ -129,18 +105,16 @@
             </svg>
           </span>
           <div class="stat-body">
-            <p class="stat-value"><span id="stat-daily-published">0</span> / <span id="stat-daily-total">0</span></p>
-            <p class="stat-label">已上架 / 总量</p>
+            <p class="stat-value"><span id="stat-daily-published">0</span><span class="stat-sep"> / </span><span id="stat-daily-total">0</span></p>
+            <p class="stat-label">今日上新 / 素材总量</p>
           </div>
         </article>
       </section>
 
-      <!-- 看板主体：左侧热度榜，右侧图表 -->
       <div class="dashboard-grid">
         <section class="panel panel-hot" aria-labelledby="hot-title">
           <div class="panel-head">
-            <h2 class="panel-title" id="hot-title">热度 TOP 5</h2>
-            <span class="panel-note">按浏览与下载综合排序</span>
+            <h2 class="panel-title" id="hot-title">热度 TOP5</h2>
           </div>
           <div class="table-wrap">
             <table class="table hot-table">
@@ -149,199 +123,36 @@
                   <th scope="col" class="col-rank">排名</th>
                   <th scope="col" class="col-title">素材标题</th>
                   <th scope="col">类型</th>
-                  <th scope="col" class="num">浏览</th>
-                  <th scope="col" class="num">下载</th>
-                  <th scope="col" class="num">
-                    <span class="th-flame" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2c.5 3.2-1.5 4.7-2.9 6.4-1 1.3-1.7 2.6-1.7 4.2a5.6 5.6 0 0 0 11.2 0c0-1.5-.6-2.9-1.6-4.2-.2 1.2-.7 2-1.4 2.5C15.5 7.8 14.2 4.7 12 2Z"/>
-                      </svg>
-                    </span>热度
-                  </th>
+                  <th scope="col" class="num">浏览量</th>
+                  <th scope="col" class="num">下载量</th>
+                  <th scope="col" class="num">热度</th>
                 </tr>
               </thead>
-              <!-- 静态示意数据，接入 js/admin.js 后由脚本覆盖 -->
-              <tbody id="hot-tbody">
-                <tr>
-                  <td class="rank rank-top">No.1</td>
-                  <td class="hot-title-cell">半条被子暖人心<svg class="trophy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M9 20h6M10 20v-3h4v3"/></svg></td>
-                  <td>文档 · 音频</td>
-                  <td class="num">256</td>
-                  <td class="num">93</td>
-                  <td class="num heat-value">535</td>
-                </tr>
-                <tr>
-                  <td class="rank rank-top">No.2</td>
-                  <td class="hot-title-cell">雪岭草地的记忆<svg class="trophy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M9 20h6M10 20v-3h4v3"/></svg></td>
-                  <td>文档 · 音频</td>
-                  <td class="num">231</td>
-                  <td class="num">78</td>
-                  <td class="num heat-value">465</td>
-                </tr>
-                <tr>
-                  <td class="rank rank-top">No.3</td>
-                  <td class="hot-title-cell">长征又从桑植出发<svg class="trophy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M9 20h6M10 20v-3h4v3"/></svg></td>
-                  <td>文档 · 配图</td>
-                  <td class="num">219</td>
-                  <td class="num">74</td>
-                  <td class="num heat-value">441</td>
-                </tr>
-                <tr>
-                  <td class="rank">No.4</td>
-                  <td class="hot-title-cell">湘南起义燃星火</td>
-                  <td>文档 · 配图</td>
-                  <td class="num">204</td>
-                  <td class="num">65</td>
-                  <td class="num heat-value">399</td>
-                </tr>
-                <tr>
-                  <td class="rank">No.5</td>
-                  <td class="hot-title-cell">通道转兵指方向</td>
-                  <td>文档 · 配图</td>
-                  <td class="num">158</td>
-                  <td class="num">52</td>
-                  <td class="num heat-value">314</td>
-                </tr>
-              </tbody>
+              <tbody id="hot-tbody"></tbody>
             </table>
           </div>
         </section>
 
-        <aside class="dashboard-side" aria-label="素材类型占比图表">
+        <aside class="dashboard-side" aria-label="分布图表">
           <section class="panel panel-chart" aria-labelledby="type-chart-title">
             <div class="panel-head">
-              <h2 class="panel-title" id="type-chart-title">素材类型占比</h2>
+              <h2 class="panel-title" id="type-chart-title">类型分布</h2>
             </div>
-            <!-- 静态示意环形图，接入 js/admin.js 后由脚本替换 -->
-            <div class="chart-box chart-donut" id="type-chart" role="img" aria-label="素材类型占比环形图：文档 6、音频 2、配图 6">
-              <svg viewBox="0 0 180 180" aria-hidden="true">
-                <circle class="donut-track" cx="90" cy="90" r="62"/>
-                <circle class="donut-seg donut-doc" cx="90" cy="90" r="62"
-                        stroke-dasharray="166.95 222.61" stroke-dashoffset="0"/>
-                <circle class="donut-seg donut-audio" cx="90" cy="90" r="62"
-                        stroke-dasharray="55.65 333.91" stroke-dashoffset="-166.95"/>
-                <circle class="donut-seg donut-image" cx="90" cy="90" r="62"
-                        stroke-dasharray="166.95 222.61" stroke-dashoffset="-222.60"/>
-                <text class="donut-center-main" x="90" y="88" text-anchor="middle">6:2:6</text>
-                <text class="donut-center-sub" x="90" y="108" text-anchor="middle">类型分布</text>
-              </svg>
-              <ul class="chart-legend">
-                <li><span class="legend-dot dot-doc" aria-hidden="true"></span>文档 <b>6</b></li>
-                <li><span class="legend-dot dot-audio" aria-hidden="true"></span>音频 <b>2</b></li>
-                <li><span class="legend-dot dot-image" aria-hidden="true"></span>配图 <b>6</b></li>
-              </ul>
+            <div class="bar-chart" id="type-chart"></div>
+          </section>
+
+          <section class="panel panel-chart" aria-labelledby="series-chart-title">
+            <div class="panel-head">
+              <h2 class="panel-title" id="series-chart-title">系列分布</h2>
             </div>
-            <p class="chart-note">注：一条素材可含多个类型，各项合计不等于素材总条目。</p>
+            <div class="bar-chart" id="series-chart"></div>
           </section>
         </aside>
       </div>
     </section>
   </main>
 
-  <!-- 上传素材弹窗 -->
-  <div class="modal" id="upload-modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="upload-modal-title">
-      <div class="modal-head">
-        <h2 id="upload-modal-title">上传素材</h2>
-        <button type="button" class="modal-close" id="upload-close" aria-label="关闭上传素材弹窗">×</button>
-      </div>
-
-      <form class="modal-body upload-form" id="upload-form" novalidate>
-        <div class="form-grid">
-          <div class="form-field form-field-full">
-            <label for="upload-title">标题</label>
-            <input id="upload-title" name="title" type="text" maxlength="60" placeholder="请输入素材标题" aria-describedby="upload-title-error">
-            <p class="field-error" id="upload-title-error" role="alert" hidden></p>
-          </div>
-
-          <div class="form-field">
-            <label for="upload-author">供稿人</label>
-            <input id="upload-author" name="author" type="text" maxlength="30" placeholder="请输入供稿人姓名">
-          </div>
-
-          <div class="form-field">
-            <label for="upload-series">系列</label>
-            <input id="upload-series" name="series" type="text" maxlength="30" placeholder="如：革命文物系列">
-          </div>
-
-          <div class="form-field">
-            <label for="upload-date">日期</label>
-            <input id="upload-date" name="date" type="date">
-          </div>
-
-          <div class="form-field">
-            <label for="upload-location">地点</label>
-            <input id="upload-location" name="location" type="text" maxlength="60" placeholder="请输入素材所在地点">
-          </div>
-
-          <div class="form-field form-field-full">
-            <label for="upload-tags">标签</label>
-            <input id="upload-tags" name="tags" type="text" maxlength="100"
-                   placeholder="多个标签用逗号分隔，如：长征, 旧址">
-          </div>
-
-          <div class="form-field form-field-full">
-            <label for="upload-intro">简介</label>
-            <textarea id="upload-intro" name="intro" rows="4" maxlength="2000"
-                      placeholder="请填写素材简介"></textarea>
-          </div>
-
-          <div class="form-field form-field-full">
-            <label for="upload-cover">配图</label>
-            <input id="upload-cover" name="cover" type="file" accept="image/*" aria-describedby="upload-cover-error">
-            <p class="field-hint">支持 JPG、PNG 等图片格式，单文件不超过 20MB；列表使用压缩封面，原图另存用于下载。</p>
-            <p class="field-error" id="upload-cover-error" role="alert" hidden></p>
-            <div class="cover-preview" id="upload-cover-preview" hidden>
-              <img id="upload-cover-image" alt="素材配图预览">
-            </div>
-          </div>
-
-          <fieldset class="form-field form-field-full type-options">
-            <legend>类型</legend>
-            <label class="type-option">
-              <input type="checkbox" id="upload-type-doc" name="type" value="文档">
-              文档
-            </label>
-            <label class="type-option">
-              <input type="checkbox" id="upload-type-audio" name="type" value="音频">
-              音频
-            </label>
-            <label class="type-option">
-              <input type="checkbox" id="upload-type-image" name="type" value="配图">
-              配图
-            </label>
-          </fieldset>
-
-          <div class="form-field form-field-full" id="upload-audio-field" hidden>
-            <label for="upload-audio">音频附件</label>
-            <input id="upload-audio" name="audio" type="file" accept="audio/*"
-                   aria-describedby="upload-audio-hint upload-audio-error">
-            <p class="field-hint" id="upload-audio-hint">支持 MP3、WAV 等音频，单文件不超过 20MB；音频仅上传存储，暂不提供后台下载。</p>
-            <p class="attachment-current" id="upload-audio-current" hidden></p>
-            <p class="field-error" id="upload-audio-error" role="alert" hidden></p>
-          </div>
-
-          <div class="form-field form-field-full" id="upload-doc-field" hidden>
-            <label for="upload-doc">文档附件</label>
-            <input id="upload-doc" name="doc" type="file"
-                   accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx"
-                   aria-describedby="upload-doc-hint upload-doc-error">
-            <p class="field-hint" id="upload-doc-hint">支持 DOC/DOCX、PDF、TXT 等文档，单文件不超过 20MB。</p>
-            <p class="attachment-current" id="upload-doc-current" hidden></p>
-            <p class="field-error" id="upload-doc-error" role="alert" hidden></p>
-          </div>
-        </div>
-
-        <p class="form-error" id="upload-error" role="alert" hidden></p>
-
-        <div class="modal-actions">
-          <button type="button" class="btn btn-outline" id="upload-cancel">取消</button>
-          <button type="submit" class="btn btn-green" id="upload-submit">确认上传</button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <div id="admin-toast" class="admin-toast" role="status" aria-live="polite"></div>
 
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>

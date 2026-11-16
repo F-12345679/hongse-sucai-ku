@@ -7,33 +7,43 @@
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
-<body class="admin-body">
-  <!-- 顶部导航 -->
+<body class="admin-body admin-materials-body admin-locked">
   <header class="top-bar admin-top-bar">
-    <div class="logo">
-      <span class="logo-mark" aria-hidden="true">★</span>
-      <span class="logo-text">红色文化数字基因库 · 管理后台</span>
+    <div class="top-bar-inner">
+      <a class="logo" href="admin.html" aria-label="红色文化数字基因库管理后台">
+        <span class="logo-mark" aria-hidden="true">★</span>
+        <span class="logo-text">红色文化数字基因库 · 管理后台</span>
+      </a>
+      <nav class="nav admin-nav" aria-label="后台导航">
+        <a href="admin.html">数据看板</a>
+        <a href="admin-materials.html" class="active" aria-current="page">素材管理</a>
+        <a href="index.html">返回素材社区</a>
+      </nav>
     </div>
-    <nav class="nav admin-nav" aria-label="后台导航">
-      <a href="admin.html">数据看板</a>
-      <a href="javascript:;" class="nav-placeholder" data-admin-notice="审核队列功能将在后续版本开放，暂不跳转页面。" aria-disabled="true" title="暂未开放">审核队列</a>
-      <a href="admin-materials.html" class="active" aria-current="page">素材管理</a>
-      <a href="index.html">返回素材社区</a>
-      <a href="javascript:;" class="nav-placeholder" data-admin-notice="演示版免登录，无需退出。" aria-disabled="true" title="暂未开放">退出登录</a>
-    </nav>
   </header>
 
   <main class="admin-main">
-    <!-- 素材管理 -->
-    <section id="materials" class="admin-section" aria-labelledby="materials-title">
+    <section id="materials" class="admin-section materials-section" aria-labelledby="materials-title">
+      <div class="admin-hero-decor" aria-hidden="true">
+        <svg viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice">
+          <path opacity=".08" fill="#8c0d14" d="M0 180 L180 96 L330 160 L500 72 L680 168 L850 104 L1010 176 L1190 82 L1330 156 L1440 104 L1440 300 L0 300 Z"/>
+          <g opacity=".1" fill="#b3131b">
+            <rect x="1236" y="82" width="5" height="118" rx="2"/>
+            <path d="M1241 86 L1308 100 L1241 120 Z"/>
+          </g>
+          <g opacity=".08" fill="#8c0d14">
+            <path d="M70 210 h82 v-14 h14 v14 h56 v-14 h14 v14 h82 v16 h-248 Z"/>
+            <path d="M1110 218 h76 v-13 h14 v13 h50 v-13 h14 v13 h76 v16 h-230 Z"/>
+          </g>
+        </svg>
+      </div>
       <div class="section-head">
         <div>
           <h1 id="materials-title">素材管理</h1>
-          <p class="section-desc">投稿文稿 · 音频 · 调研配图 一表统管</p>
+          <p class="section-desc">原始素材与本地投稿统一管理，统计口径与首页、详情页一致</p>
         </div>
       </div>
 
-      <!-- 筛选工具栏 -->
       <div class="filter-bar" role="search" aria-label="素材筛选">
         <div class="filter-search">
           <svg class="filter-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -42,7 +52,7 @@
             <path d="m16.5 16.5 4 4"/>
           </svg>
           <input id="material-search" name="keyword" type="search"
-                 placeholder="搜索素材标题 / 供稿人" aria-label="搜索素材标题或供稿人" autocomplete="off">
+                 placeholder="搜索标题 / 供稿人 / 地点 / 标签" aria-label="搜索素材" autocomplete="off">
         </div>
         <select id="material-type-filter" name="type" class="filter-select" aria-label="按素材类型筛选">
           <option value="all">全部类型</option>
@@ -50,213 +60,69 @@
           <option value="音频">音频</option>
           <option value="配图">配图</option>
         </select>
-        <select id="material-status-filter" name="status" class="filter-select" aria-label="按素材状态筛选">
-          <option value="all">全部状态</option>
-          <option value="已入库">已入库</option>
-          <option value="待审核">待审核</option>
+        <select id="material-sort" name="sort" class="filter-select" aria-label="排序方式">
+          <option value="date">最新上传</option>
+          <option value="views">浏览量</option>
+          <option value="downloads">下载量</option>
+          <option value="heat">热度</option>
         </select>
         <div class="filter-actions">
           <button type="button" class="btn btn-red" id="upload-open">＋ 上传素材</button>
         </div>
       </div>
 
-      <!-- 概览卡 -->
       <section class="overview-grid" aria-label="素材概览">
         <article class="overview-card">
           <p class="overview-label">素材总数</p>
           <div class="overview-main">
-            <p class="overview-value" id="overview-total">6</p>
-            <p class="overview-note" id="overview-total-note">文档 6 · 音频 2</p>
+            <p class="overview-value" id="overview-total">0</p>
           </div>
-        </article>
-        <article class="overview-card is-complete" id="overview-covered-card">
-          <p class="overview-label">已配图</p>
-          <div class="overview-main">
-            <span class="overview-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="m8.5 12 2.3 2.3L16 9.5"/>
-              </svg>
-            </span>
-            <p class="overview-value"><span id="overview-covered-count">6</span><span class="overview-sep">/</span><span id="overview-covered-total">6</span></p>
-            <p class="overview-note" id="overview-covered-note">全部完成</p>
-          </div>
+          <p class="overview-note" id="overview-total-note">原始 0 · 投稿 0</p>
         </article>
         <article class="overview-card">
-          <p class="overview-label">已入库</p>
+          <p class="overview-label">今日上新 / 素材总量</p>
           <div class="overview-main">
-            <p class="overview-value"><span id="overview-stored">6</span><span class="overview-unit">篇</span></p>
-            <p class="overview-note">全部通过审核</p>
+            <p class="overview-value"><span id="overview-daily">0</span><span class="overview-sep"> / </span><span id="overview-daily-total">0</span></p>
           </div>
+          <p class="overview-note">当天实际投稿数量</p>
         </article>
         <article class="overview-card">
-          <p class="overview-label">今日上新</p>
+          <p class="overview-label">累计浏览量</p>
           <div class="overview-main">
-            <p class="overview-value"><span id="overview-daily">0</span><span class="overview-sep">/</span>30</p>
-            <p class="overview-note">已上架 / 每日限30篇</p>
+            <p class="overview-value" id="overview-views">0</p>
           </div>
+          <p class="overview-note">全部素材统计之和</p>
+        </article>
+        <article class="overview-card">
+          <p class="overview-label">累计下载量</p>
+          <div class="overview-main">
+            <p class="overview-value" id="overview-downloads">0</p>
+          </div>
+          <p class="overview-note">全部素材统计之和</p>
         </article>
       </section>
 
-      <!-- 素材列表 -->
       <div class="list-panel">
         <div class="table-wrap">
           <table class="table list-table">
             <thead>
               <tr>
-                <th scope="col" class="col-check">
-                  <input type="checkbox" id="material-check-all" aria-label="全选素材">
-                </th>
-                <th scope="col" class="col-title">素材标题</th>
+                <th scope="col" class="col-cover">缩略图</th>
+                <th scope="col" class="col-title">标题</th>
                 <th scope="col" class="col-author">供稿人</th>
+                <th scope="col" class="col-location">地点</th>
+                <th scope="col" class="col-date">日期</th>
                 <th scope="col" class="col-type">类型</th>
-                <th scope="col" class="col-status">状态</th>
-                <th scope="col" class="col-date">更新日期</th>
+                <th scope="col" class="col-num">浏览量</th>
+                <th scope="col" class="col-num">下载量</th>
                 <th scope="col" class="col-actions">操作</th>
               </tr>
             </thead>
-            <!-- 静态示意数据，接入 js/admin.js 后由脚本覆盖 -->
-            <tbody id="material-tbody">
-              <tr data-id="1">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《半条被子暖人心》">
-                </td>
-                <td>
-                  <span class="material-main">半条被子暖人心</span>
-                  <span class="material-sub">汝城县文明瑶族乡沙洲村</span>
-                </td>
-                <td>陈雨薇</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-audio">音频</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-01</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=1" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/01_bantiaobeizi.doc">下载</a>
-                </td>
-              </tr>
-              <tr data-id="2">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《雪岭草地的记忆》">
-                </td>
-                <td>
-                  <span class="material-main">雪岭草地的记忆</span>
-                  <span class="material-sub">川西高原 · 泸定桥</span>
-                </td>
-                <td>李明远</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-audio">音频</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-03</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=2" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/02_ludingqiao.docx">下载</a>
-                </td>
-              </tr>
-              <tr data-id="3">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《长征又从桑植出发》">
-                </td>
-                <td>
-                  <span class="material-main">长征又从桑植出发</span>
-                  <span class="material-sub">桑植县刘家坪</span>
-                </td>
-                <td>向红梅</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-10</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=3" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/03_sangzhi.docx">下载</a>
-                </td>
-              </tr>
-              <tr data-id="4">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《湘南起义燃星火》">
-                </td>
-                <td>
-                  <span class="material-main">湘南起义燃星火</span>
-                  <span class="material-sub">宜章 · 湘南起义纪念馆</span>
-                </td>
-                <td>谭志强</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-05</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=4" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/04_xiangnan.docx">下载</a>
-                </td>
-              </tr>
-              <tr data-id="5">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《通道转兵指方向》">
-                </td>
-                <td>
-                  <span class="material-main">通道转兵指方向</span>
-                  <span class="material-sub">通道县 · 恭城书院</span>
-                </td>
-                <td>吴晓峰</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-07</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=5" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/05_tongdao.docx">下载</a>
-                </td>
-              </tr>
-              <tr data-id="6">
-                <td class="col-check">
-                  <input type="checkbox" class="row-check" aria-label="选择素材《断肠明志铸忠魂》">
-                </td>
-                <td>
-                  <span class="material-main">断肠明志铸忠魂</span>
-                  <span class="material-sub">永州道县 · 陈树湘烈士纪念陵园</span>
-                </td>
-                <td>周立军</td>
-                <td>
-                  <span class="type-chip type-doc">文档</span>
-                  <span class="type-chip type-image">配图</span>
-                </td>
-                <td><span class="status-chip status-stored">已入库</span></td>
-                <td>2026-11-12</td>
-                <td class="row-actions">
-                  <a href="detail.html?id=6" target="_blank" rel="noopener">预览</a>
-                  <span class="action-sep" aria-hidden="true">·</span>
-                  <a href="assets/docs/06_chenshuxiang.docx">下载</a>
-                </td>
-              </tr>
-            </tbody>
+            <tbody id="material-tbody"></tbody>
           </table>
         </div>
-
         <div class="list-footer">
-          <div class="bulk-actions">
-            <button type="button" class="btn btn-outline" id="batch-audio">批量挂音频</button>
-            <button type="button" class="btn btn-outline" id="batch-cover">批量替换配图</button>
-            <button type="button" class="btn btn-outline" id="export-list">导出清单</button>
-          </div>
-          <span class="selection-count" id="selected-count" aria-live="polite">已选 0 项</span>
+          <span class="selection-count" id="list-count">共 0 条素材</span>
         </div>
       </div>
     </section>
@@ -274,18 +140,18 @@
       <form class="modal-body upload-form" id="upload-form" novalidate>
         <div class="form-grid">
           <div class="form-field form-field-full">
-            <label for="upload-title">标题</label>
+            <label for="upload-title">标题 <span class="required">*</span></label>
             <input id="upload-title" name="title" type="text" maxlength="60" placeholder="请输入素材标题" aria-describedby="upload-title-error">
             <p class="field-error" id="upload-title-error" role="alert" hidden></p>
           </div>
 
           <div class="form-field">
-            <label for="upload-author">供稿人</label>
+            <label for="upload-author">供稿人 <span class="required">*</span></label>
             <input id="upload-author" name="author" type="text" maxlength="30" placeholder="请输入供稿人姓名">
           </div>
 
           <div class="form-field">
-            <label for="upload-series">系列</label>
+            <label for="upload-series">系列 <span class="required">*</span></label>
             <input id="upload-series" name="series" type="text" maxlength="30" placeholder="如：革命文物系列">
           </div>
 
@@ -306,13 +172,13 @@
           </div>
 
           <div class="form-field form-field-full">
-            <label for="upload-intro">简介</label>
+            <label for="upload-intro">简介 <span class="required">*</span></label>
             <textarea id="upload-intro" name="intro" rows="4" maxlength="2000"
                       placeholder="请填写素材简介"></textarea>
           </div>
 
           <div class="form-field form-field-full">
-            <label for="upload-cover">配图</label>
+            <label for="upload-cover">配图 <span class="required">*</span></label>
             <input id="upload-cover" name="cover" type="file" accept="image/*" aria-describedby="upload-cover-error">
             <p class="field-hint">支持 JPG、PNG 等图片格式，单文件不超过 20MB；列表使用压缩封面，原图另存用于下载。</p>
             <p class="field-error" id="upload-cover-error" role="alert" hidden></p>
@@ -341,8 +207,7 @@
             <label for="upload-audio">音频附件</label>
             <input id="upload-audio" name="audio" type="file" accept="audio/*"
                    aria-describedby="upload-audio-hint upload-audio-error">
-            <p class="field-hint" id="upload-audio-hint">支持 MP3、WAV 等音频，单文件不超过 20MB；音频仅上传存储，暂不提供后台下载。</p>
-            <p class="attachment-current" id="upload-audio-current" hidden></p>
+            <p class="field-hint" id="upload-audio-hint">支持 MP3、WAV 等音频，单文件不超过 20MB。</p>
             <p class="field-error" id="upload-audio-error" role="alert" hidden></p>
           </div>
 
@@ -352,7 +217,6 @@
                    accept=".doc,.docx,.pdf,.txt,.md,.ppt,.pptx,.xls,.xlsx"
                    aria-describedby="upload-doc-hint upload-doc-error">
             <p class="field-hint" id="upload-doc-hint">支持 DOC/DOCX、PDF、TXT 等文档，单文件不超过 20MB。</p>
-            <p class="attachment-current" id="upload-doc-current" hidden></p>
             <p class="field-error" id="upload-doc-error" role="alert" hidden></p>
           </div>
         </div>
@@ -361,11 +225,13 @@
 
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" id="upload-cancel">取消</button>
-          <button type="submit" class="btn btn-green" id="upload-submit">确认上传</button>
+          <button type="submit" class="btn btn-red" id="upload-submit">确认上传</button>
         </div>
       </form>
     </div>
   </div>
+
+  <div id="admin-toast" class="admin-toast" role="status" aria-live="polite"></div>
 
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
