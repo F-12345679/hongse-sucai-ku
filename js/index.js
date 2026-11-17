@@ -378,7 +378,7 @@
 
   function buildTop5Mini(material, rank) {
     var card = document.createElement('article');
-    card.className = 'top5-mini ' + (rank === 2 || rank === 4 ? 'top5-mini--near' : 'top5-mini--far');
+    card.className = 'top5-mini ' + (rank === 2 || rank === 3 ? 'top5-mini--near' : 'top5-mini--far');
     attachOpenHandler(card, material.id);
     card.setAttribute('aria-label', '热度第' + rank + '名：' + material.title);
 
@@ -442,8 +442,8 @@
 
     center.appendChild(buildTop5Main(top[0]));
     if (top[1]) left.appendChild(buildTop5Mini(top[1], 2));
-    if (top[2]) left.appendChild(buildTop5Mini(top[2], 3));
-    if (top[3]) right.appendChild(buildTop5Mini(top[3], 4));
+    if (top[2]) right.appendChild(buildTop5Mini(top[2], 3));
+    if (top[3]) left.appendChild(buildTop5Mini(top[3], 4));
     if (top[4]) right.appendChild(buildTop5Mini(top[4], 5));
   }
 

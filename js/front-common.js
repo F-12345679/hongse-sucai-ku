@@ -7,7 +7,9 @@
 
   var CUSTOM_KEY = 'hongse_custom_materials_v1';
   var STATS_KEY = 'hongse_material_stats_v1';
-  var SEED_STATS_KEY = 'hongse_material_seed_stats_v2';
+  var SEED_STATS_KEY = 'hongse_material_seed_stats_v3';
+  var SEED_FINGERPRINT_KEY = 'hongse_material_seed_fingerprint_v1';
+  var LEGACY_SEED_STATS_KEYS = ['hongse_material_seed_stats_v1', 'hongse_material_seed_stats_v2'];
   var OVERRIDES_KEY = 'hongse_material_overrides_v1';
   var ID_COUNTER_KEY = 'hongse_custom_id_counter_v1';
   /* 后台“修改素材”可覆盖的文本字段，逐字段按 id 覆盖 */
@@ -127,7 +129,7 @@
     }
   }
 
-  /* 演示基数只在首次加载时为原始素材生成一次，之后永远读取本地保存值 */
+  /* 演示基数按 data.js 版本指纹缓存；基数变化时自动重建并清理旧增量 */
   function getSeedStats() {
     var seeds = readJSON(SEED_STATS_KEY, {});
     if (!seeds || typeof seeds !== 'object' || Array.isArray(seeds)) return {};
@@ -141,6 +143,63 @@
     } catch (err) {
       return false;
     }
+  }
+
+  function removeStoredKey(key) {
+    try {
+      global.localStorage.removeItem(key);
+    } catch (err) {
+      /* 本地存储不可用时忽略 */
+    }
+  }
+
+  function computeSeedFingerprint(originals) {
+    var parts = [];
+    (originals || []).forEach(function (material) {
+      if (!material || material.id == null) return;
+      parts.push(String(material.id) + ':' +
+        toCount(material.views, 0) + ':' + toCount(material.downloads, 0));
+    });
+    return parts.join('|');
+  }
+
+  function saveSeedFingerprint(fingerprint) {
+    try {
+      global.localStorage.setItem(SEED_FINGERPRINT_KEY, JSON.stringify(fingerprint));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function clearNumericOverrides() {
+    var map = getOverrides();
+    var changed = false;
+
+    Object.keys(map).forEach(function (key) {
+      var entry = map[key];
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+
+      ['views', 'downloads'].forEach(function (field) {
+        if (!Object.prototype.hasOwnProperty.call(entry, field)) return;
+        delete entry[field];
+        changed = true;
+      });
+
+      if (!Object.keys(entry).length) {
+        delete map[key];
+        changed = true;
+      }
+    });
+
+    if (changed) saveOverrides(map);
+  }
+
+  function resetSeedCache() {
+    removeStoredKey(SEED_STATS_KEY);
+    LEGACY_SEED_STATS_KEYS.forEach(removeStoredKey);
+    removeStoredKey(STATS_KEY);
+    clearNumericOverrides();
   }
 
   /* ---------- 按 id 覆盖层（后台修改素材） ----------
@@ -214,6 +273,12 @@
   }
 
   function ensureSeedStats(originals) {
+    var fingerprint = computeSeedFingerprint(originals);
+    if (readJSON(SEED_FINGERPRINT_KEY, '') !== fingerprint) {
+      resetSeedCache();
+      saveSeedFingerprint(fingerprint);
+    }
+
     var seeds = getSeedStats();
     var changed = false;
 
@@ -283,9 +348,9 @@
   }
 
   function getAllMaterials() {
-    var stats = getStats();
     var originals = getOriginalMaterials();
     var seeds = ensureSeedStats(originals);
+    var stats = getStats();
     var overrides = getOverrides();
     return originals
       .concat(getCustomMaterials())

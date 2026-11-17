@@ -28,10 +28,12 @@ body {
 .back-link:hover { text-decoration: underline; }
 
 .detail-card {
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--glass-shadow);
   overflow: hidden;
 }
 
@@ -43,7 +45,7 @@ body {
 
 .detail-left {
   padding: 26px;
-  background: #fbf8f3;
+  background: transparent;
   border-right: 1px solid var(--border);
 }
 
@@ -162,7 +164,7 @@ body {
 .detail-intro {
   margin-top: 20px;
   padding: 18px 20px;
-  background: #fdf3f3;
+  background: rgba(255, 255, 255, .34);
   border-left: 4px solid var(--main-red);
   border-radius: 0 10px 10px 0;
   color: #3d3833;
@@ -219,10 +221,10 @@ body {
 .related-card {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 14px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--glass-shadow);
   overflow: hidden;
   cursor: pointer;
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
@@ -391,6 +393,8 @@ body {
 .detail-card {
   border-radius: 22px;
   background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
 }
@@ -401,8 +405,7 @@ body {
 
 .detail-left {
   padding: 30px;
-  background:
-    linear-gradient(160deg, rgba(255, 252, 247, .72), rgba(250, 243, 233, .5));
+  background: transparent;
   border-right: 1px solid rgba(140, 13, 20, .08);
 }
 
@@ -469,8 +472,7 @@ body {
 .detail-intro {
   margin-top: 24px;
   padding: 22px 24px;
-  background:
-    linear-gradient(160deg, rgba(255, 249, 246, .86), rgba(253, 243, 243, .7));
+  background: rgba(255, 255, 255, .34);
   border-left: 4px solid var(--main-red);
   border-radius: 0 14px 14px 0;
   box-shadow:
@@ -510,6 +512,10 @@ body {
 .related-card {
   border-radius: 18px;
   background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 .related-cover {
@@ -528,7 +534,7 @@ body {
 .related-card:hover,
 .related-card:focus-visible {
   transform: translateY(-6px);
-  border-color: rgba(217, 164, 65, .62);
+  border-color: rgba(217, 164, 65, .55);
   box-shadow: var(--shadow-lift);
 }
 
@@ -617,13 +623,13 @@ body {
 .intro-shell::before {
   top: 0;
   border-radius: 0 14px 0 0;
-  background: linear-gradient(180deg, #fdf3f3, rgba(253, 243, 243, 0));
+  background: linear-gradient(180deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0));
 }
 
 .intro-shell::after {
   bottom: 0;
   border-radius: 0 0 14px 0;
-  background: linear-gradient(0deg, #fdf3f3, rgba(253, 243, 243, 0));
+  background: linear-gradient(0deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0));
 }
 
 .intro-shell.has-scroll:not(.at-top)::before,
