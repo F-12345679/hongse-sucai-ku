@@ -1,0 +1,189 @@
+{
+  "checks": [
+    {
+      "name": "index cards @1440",
+      "ok": true,
+      "detail": "50"
+    },
+    {
+      "name": "index cards @768",
+      "ok": true,
+      "detail": "50"
+    },
+    {
+      "name": "index cards @375",
+      "ok": true,
+      "detail": "50"
+    },
+    {
+      "name": "card glass blur",
+      "ok": true,
+      "detail": "blur(16px) saturate(1.35)"
+    },
+    {
+      "name": "card hover lift 6px",
+      "ok": true,
+      "detail": "matrix(1, 0, 0, 1, 0, -6)"
+    },
+    {
+      "name": "sticky header top",
+      "ok": true,
+      "detail": "y=0 class=top-bar site-header is-scrolled"
+    },
+    {
+      "name": "scrolled header state",
+      "ok": true,
+      "detail": "top-bar site-header is-scrolled"
+    },
+    {
+      "name": "reduced motion disables lift",
+      "ok": true,
+      "detail": "none"
+    },
+    {
+      "name": "detail title @1440",
+      "ok": true,
+      "detail": "南湖红船：一叶小舟启新程"
+    },
+    {
+      "name": "detail title @768",
+      "ok": true,
+      "detail": "南湖红船：一叶小舟启新程"
+    },
+    {
+      "name": "detail title @375",
+      "ok": true,
+      "detail": "南湖红船：一叶小舟启新程"
+    },
+    {
+      "name": "list/detail views match",
+      "ok": true,
+      "detail": "1310 vs 1310"
+    },
+    {
+      "name": "list/detail downloads match",
+      "ok": true,
+      "detail": "460 vs 460"
+    },
+    {
+      "name": "detail audio playable",
+      "ok": true,
+      "detail": "{'ok': True, 'duration': 37.26, 'readyState': 4, 'src': 'assets/audio/material_50.mp3'}"
+    },
+    {
+      "name": "image source credited",
+      "ok": true,
+      "detail": "图片来源：Wikimedia Commons · CC BY-SA 4.0 · 摄影：Time-137 · 查看原图出处"
+    },
+    {
+      "name": "AI panel opens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "AI thinking shown",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "AI reply after 1.5s",
+      "ok": true,
+      "detail": "长征是红色素材库里最厚重的一条线索。我按馆藏热度挑了几条与长征相关的素材，其中有声素材可以直接试听、也可以进入详情页查看"
+    },
+    {
+      "name": "AI has recommendation links",
+      "ok": true,
+      "detail": "3"
+    },
+    {
+      "name": "AI panel not covering article @1440",
+      "ok": true,
+      "detail": "gap=56"
+    },
+    {
+      "name": "AI panel closes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "AI panel reopens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "AI Mao audio recommendation",
+      "ok": true,
+      "detail": "与毛泽东同志相关的有声素材，适合从声音里走近历史现场。下面这条可以直接试听，其余条目进入详情页即可播"
+    },
+    {
+      "name": "admin stat cards @1440",
+      "ok": true,
+      "detail": "6"
+    },
+    {
+      "name": "admin hot table no clip @1440",
+      "ok": true,
+      "detail": "{'wrap': 791, 'table': 791, 'overflow': 0}"
+    },
+    {
+      "name": "admin stat cards @768",
+      "ok": true,
+      "detail": "6"
+    },
+    {
+      "name": "admin hot table no clip @768",
+      "ok": true,
+      "detail": "{'wrap': 670, 'table': 670, 'overflow': 0}"
+    },
+    {
+      "name": "admin stat cards @375",
+      "ok": true,
+      "detail": "6"
+    },
+    {
+      "name": "admin hot table no clip @375",
+      "ok": true,
+      "detail": "{'wrap': 309, 'table': 309, 'overflow': 0}"
+    },
+    {
+      "name": "50 images in manifest",
+      "ok": true,
+      "detail": "50"
+    },
+    {
+      "name": "50 unique image hashes",
+      "ok": true,
+      "detail": "50"
+    },
+    {
+      "name": "uniform image size",
+      "ok": true,
+      "detail": "{(1200, 750)}"
+    }
+  ],
+  "shots": [
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-1440-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-1440-cards.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-1440-full.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-768-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-768-cards.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-375-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\index-375-cards.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\detail-1440-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\detail-1440-full.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\detail-768-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\detail-375-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\detail-ai-1440.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-1440-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-1440-full.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-1440-table.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-768-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-768-table.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-375-top.png",
+    "E:\\applicationtwo\\GitHub desktop\\hongse-sucai-ku\\2026-11-16\\material-library-polish\\outputs\\admin-375-table.png"
+  ],
+  "summary": {
+    "passed": 32,
+    "total": 32
+  }
+}

@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>素材详情 · 红色文化数字基因库</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/detail.css">
+  <link rel="stylesheet" href="css/ai-chat.css?v=20261117e">
 </head>
 <body class="detail-body">
   <header class="top-bar site-header">
@@ -40,6 +42,10 @@
             <div class="action-buttons">
               <button class="btn btn-red" id="download-btn" type="button" hidden>下载文档</button>
               <a class="btn btn-outline" href="index.html">返回首页</a>
+              <button id="ai-launch" class="btn btn-outline ai-entry-btn" type="button"
+                      aria-haspopup="dialog" aria-expanded="false" aria-controls="ai-panel">
+                <span class="ai-entry-spark" aria-hidden="true">✦</span>AI 星火智学
+              </button>
             </div>
             <p id="download-hint" class="download-hint" hidden></p>
           </div>
@@ -54,7 +60,10 @@
 
           <div id="tags" class="detail-tags"></div>
 
-          <div id="intro" class="detail-intro"></div>
+          <div id="intro-shell" class="intro-shell">
+            <div id="intro" class="detail-intro"></div>
+          </div>
+          <p id="image-source" class="image-source" hidden></p>
         </div>
       </div>
     </section>
@@ -78,8 +87,61 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+  <!-- 详情页 AI 助手：锚定在触发按钮上方的浮层 -->
+  <div id="ai-widget" class="ai-widget ai-widget--anchored">
+    <section id="ai-panel" class="ai-panel ai-panel--anchored" role="dialog"
+             aria-labelledby="ai-panel-name" hidden>
+      <header class="ai-panel-head">
+        <div class="ai-identity">
+          <span class="ai-avatar" aria-hidden="true">★</span>
+          <div>
+            <p class="ai-name" id="ai-panel-name">AI 星火智学助手</p>
+            <p class="ai-status"><i aria-hidden="true"></i><span id="ai-status-text">在线 · 站内检索</span></p>
+          </div>
+        </div>
+        <div class="ai-tools">
+          <button id="ai-settings-toggle" class="ai-settings-toggle" type="button"
+                  aria-label="设置 DeepSeek API Key" aria-expanded="false" aria-controls="ai-settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.2"/>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.17.61.68 1.06 1.31 1.09H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.91Z"/>
+            </svg>
+          </button>
+          <button id="ai-close" class="ai-close" type="button" aria-label="收起 AI 助手">×</button>
+        </div>
+      </header>
+
+      <div id="ai-settings" class="ai-settings" hidden>
+        <label class="ai-settings-label" for="ai-key-input">DeepSeek API Key（仅保存在本机浏览器）</label>
+        <div class="ai-key-row">
+          <input id="ai-key-input" class="ai-key-input" type="password" placeholder="粘贴 sk- 开头的 Key"
+                 autocomplete="off" spellcheck="false" aria-label="DeepSeek API Key">
+          <button id="ai-key-save" class="ai-key-btn is-primary" type="button">保存</button>
+          <button id="ai-key-clear" class="ai-key-btn" type="button">清除</button>
+        </div>
+        <p class="ai-key-state" id="ai-key-state">未配置 · 当前使用站内关键词应答</p>
+        <p class="ai-key-hint">Key 只写入 localStorage，不会出现在页面代码或配置文件中；配置后可直连 DeepSeek，失败会自动退回站内检索。</p>
+      </div>
+
+      <div id="ai-messages" class="ai-messages" role="log" aria-live="polite"></div>
+
+      <div id="ai-quick" class="ai-quick" aria-label="快捷提问">
+        <button class="ai-quick-btn" type="button" data-prompt="推荐长征主题素材">长征主题</button>
+        <button class="ai-quick-btn" type="button" data-prompt="有哪些毛泽东相关音频">毛泽东音频</button>
+        <button class="ai-quick-btn" type="button" data-prompt="当前热门素材有哪些">热门素材</button>
+      </div>
+
+      <form id="ai-form" class="ai-form" autocomplete="off">
+        <input id="ai-input" class="ai-input" type="text" maxlength="80"
+               placeholder="问问长征、毛泽东相关素材…" aria-label="向 AI 助手提问">
+        <button class="ai-send" type="submit">发送</button>
+      </form>
+    </section>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
   <script src="js/detail.js"></script>
+  <script src="js/ai-chat.js?v=20261117e"></script>
 </body>
 </html>

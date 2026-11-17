@@ -22,7 +22,7 @@
     keyword: '',
     series: 'all',
     type: 'all',
-    sort: 'date'
+    sort: 'relevance'
   };
 
   /* ---------- 工具函数 ---------- */
@@ -122,10 +122,6 @@
     if (saved.type && (saved.type === 'all' || typeList.indexOf(saved.type) !== -1)) {
       state.type = saved.type;
     }
-    if (saved.sort === 'date' || saved.sort === 'views' ||
-        saved.sort === 'downloads' || saved.sort === 'relevance') {
-      state.sort = saved.sort;
-    }
   }
 
   function syncControls() {
@@ -145,7 +141,7 @@
     state.keyword = '';
     state.series = 'all';
     state.type = 'all';
-    state.sort = 'date';
+    state.sort = 'relevance';
     document.getElementById('search-input').value = '';
   }
 
@@ -264,9 +260,7 @@
       sorted.sort(byNumberDesc('downloads'));
     } else if (state.sort === 'relevance') {
       sorted.sort(function (a, b) {
-        var diff = relevanceScore(b, keyword) - relevanceScore(a, keyword);
-        if (diff !== 0) return diff;
-        return byDateDesc(a, b);
+        return relevanceScore(b, keyword) - relevanceScore(a, keyword);
       });
     } else {
       sorted.sort(byDateDesc);
@@ -406,6 +400,16 @@
     title.textContent = material.title;
     body.appendChild(title);
 
+    var intro = document.createElement('p');
+    intro.className = 'top5-mini-intro';
+    intro.textContent = shortIntro(material.intro, 46);
+    body.appendChild(intro);
+
+    var location = document.createElement('p');
+    location.className = 'top5-mini-location';
+    location.textContent = '地点：' + (material.location || '—');
+    body.appendChild(location);
+
     body.appendChild(buildStats(material.views, material.downloads, 'stats-line top5-mini-stats'));
     card.appendChild(body);
 
@@ -481,7 +485,7 @@
 
     var date = document.createElement('p');
     date.className = 'card-meta-line';
-    date.textContent = '日期：' + (material.date || '—');
+    date.textContent = '上传日期：' + (material.date || '—');
     info.appendChild(date);
 
     var tags = document.createElement('div');
@@ -520,9 +524,91 @@
 
   function update() {
     syncControls();
+    syncSearchLayout();
     renderTop5();
     renderResults();
     saveState();
+  }
+
+  /* 副标题左端对齐到标题「基」字左缘；空间不足时退回标题右缘对齐 */
+  function alignHeroSignature() {
+    var title = document.getElementById('hero-title');
+    var heading = document.querySelector('.hero-heading');
+    var sub = document.querySelector('.hero-heading .hero-subtitle-main');
+    if (!title || !heading || !sub) return;
+
+    var cs = window.getComputedStyle(title);
+    var fs = parseFloat(cs.fontSize) || 0;
+    var ls = cs.letterSpacing === 'normal' ? 0 : parseFloat(cs.letterSpacing) || 0;
+    var padLeft = parseFloat(cs.paddingLeft) || 0;
+    var padRight = parseFloat(cs.paddingRight) || 0;
+    var headingRect = heading.getBoundingClientRect();
+    var subWidth = sub.getBoundingClientRect().width;
+
+    var left = padLeft + 6 * (fs + ls);
+    var room = document.documentElement.clientWidth - 16 - headingRect.left;
+    if (left + subWidth > room) {
+      left = Math.max(0, headingRect.width - padRight - subWidth);
+    }
+    sub.style.left = left + 'px';
+  }
+
+  /* 关键词搜索时让出 TOP5 区块，由结果栅格接管 */
+  function syncSearchLayout() {
+    var searching = !!(state.keyword && state.keyword.trim());
+    document.getElementById('top5-section').hidden = searching;
+  }
+
+  /* 搜索胶囊吸附：仅胶囊浮在导航下方，原位用等高占位撑住，避免跳动 */
+  function bindStickySearch() {
+    var dock = document.getElementById('search-dock');
+    var spacer = document.getElementById('search-dock-spacer');
+    var header = document.querySelector('.top-bar');
+    if (!dock || !spacer || !header) return;
+
+    var GAP = 18;
+    var ticking = false;
+
+    function syncTop() {
+      document.documentElement.style.setProperty('--sticky-search-top', header.offsetHeight + 'px');
+    }
+
+    function isStuck() {
+      return dock.classList.contains('is-stuck');
+    }
+
+    function check() {
+      ticking = false;
+      var limit = header.offsetHeight + GAP;
+      if (!isStuck()) {
+        if (dock.getBoundingClientRect().top <= limit) {
+          spacer.style.height = dock.offsetHeight + 'px';
+          dock.classList.add('is-stuck');
+        }
+      } else if (spacer.getBoundingClientRect().top > limit + 1) {
+        dock.classList.remove('is-stuck');
+        spacer.style.height = '0px';
+      }
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(check);
+    }
+
+    syncTop();
+    check();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () {
+      syncTop();
+      if (isStuck()) spacer.style.height = dock.offsetHeight + 'px';
+      check();
+    });
+    window.addEventListener('load', function () {
+      syncTop();
+      check();
+    });
   }
 
   /* ---------- 投稿弹窗 ---------- */
@@ -724,18 +810,19 @@
     function applySearch() {
       justAddedId = null;
       state.keyword = searchInput.value.trim();
-
-      if (!state.keyword) {
-        if (state.sort === 'relevance') state.sort = 'date';
-      } else if (state.sort === 'date') {
-        state.sort = 'relevance';
-      }
       update();
     }
 
     searchForm.addEventListener('submit', function (event) {
       event.preventDefault();
       applySearch();
+    });
+
+    searchInput.addEventListener('input', function () {
+      if (searchInput.value.trim() || !state.keyword) return;
+      justAddedId = null;
+      state.keyword = '';
+      update();
     });
 
     document.getElementById('filter-series').addEventListener('change', function () {
@@ -809,8 +896,13 @@
   syncControls();
   renderTop5();
   renderResults();
+  syncSearchLayout();
   bindEvents();
   bindModal();
+  bindStickySearch();
+  alignHeroSignature();
+  window.addEventListener('resize', alignHeroSignature);
+  window.addEventListener('load', alignHeroSignature);
 
   /* 从详情页返回时重新读取统计与筛选状态 */
   window.addEventListener('pageshow', function () {

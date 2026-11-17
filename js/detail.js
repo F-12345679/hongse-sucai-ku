@@ -29,9 +29,7 @@
 
   document.title = material.title + ' · 红色文化数字基因库';
 
-  /* 进入详情页浏览量 +1（仅本地增量） */
-  var viewResult = api.incrementStat(material.id, 'views');
-  if (viewResult) material.views = viewResult.views;
+  /* 浏览量与下载量直接读取同一数据源，保证列表页与详情页展示一致 */
 
   function buildStatItem(icon, label, value, idSuffix) {
     var span = document.createElement('span');
@@ -51,6 +49,25 @@
     if (viewsNode) viewsNode.textContent = String(material.views || 0);
     if (downloadsNode) downloadsNode.textContent = String(material.downloads || 0);
   }
+
+  /* 简介在卡片内滚动：按需显示上下渐隐提示 */
+  function syncIntroScroll() {
+    var shell = document.getElementById('intro-shell');
+    var intro = document.getElementById('intro');
+    if (!shell || !intro) return;
+
+    var scrollable = intro.scrollHeight - intro.clientHeight > 2;
+    shell.classList.toggle('has-scroll', scrollable);
+    shell.classList.toggle('at-top', intro.scrollTop <= 1);
+    shell.classList.toggle('at-bottom', !scrollable || intro.scrollTop + intro.clientHeight >= intro.scrollHeight - 2);
+  }
+
+  (function bindIntroScroll() {
+    var intro = document.getElementById('intro');
+    if (!intro) return;
+    intro.addEventListener('scroll', syncIntroScroll, { passive: true });
+    window.addEventListener('resize', syncIntroScroll);
+  })();
 
   function renderDetail() {
     var cover = document.getElementById('cover');
@@ -74,7 +91,7 @@
     if (material.date) {
       var date = document.createElement('span');
       date.className = 'meta-item';
-      date.textContent = '日期：' + material.date;
+      date.textContent = '上传日期：' + material.date;
       meta.appendChild(date);
     }
     if (material.series) {
@@ -102,6 +119,22 @@
     });
 
     document.getElementById('intro').textContent = material.intro || '该素材暂无详细简介。';
+    window.requestAnimationFrame(syncIntroScroll);
+
+    var sourceNode = document.getElementById('image-source');
+    if (material.imageSource) {
+      sourceNode.hidden = false;
+      sourceNode.appendChild(document.createTextNode('图片来源：' + material.imageSource));
+      if (material.imageSourceUrl) {
+        var sourceLink = document.createElement('a');
+        sourceLink.href = material.imageSourceUrl;
+        sourceLink.target = '_blank';
+        sourceLink.rel = 'noopener noreferrer';
+        sourceLink.textContent = '查看原图出处';
+        sourceNode.appendChild(document.createTextNode(' · '));
+        sourceNode.appendChild(sourceLink);
+      }
+    }
 
     if (material.audio) {
       var audioBox = document.getElementById('audio-box');

@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>素材管理 · 管理后台 · 红色文化数字基因库</title>
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <link rel="stylesheet" href="css/common.css?v=20261117c">
+  <link rel="stylesheet" href="css/admin.css?v=20261117c">
 </head>
 <body class="admin-body admin-materials-body admin-locked">
   <header class="top-bar admin-top-bar">
@@ -40,7 +41,6 @@
       <div class="section-head">
         <div>
           <h1 id="materials-title">素材管理</h1>
-          <p class="section-desc">原始素材与本地投稿统一管理，统计口径与首页、详情页一致</p>
         </div>
       </div>
 
@@ -78,13 +78,6 @@
             <p class="overview-value" id="overview-total">0</p>
           </div>
           <p class="overview-note" id="overview-total-note">原始 0 · 投稿 0</p>
-        </article>
-        <article class="overview-card">
-          <p class="overview-label">今日上新 / 素材总量</p>
-          <div class="overview-main">
-            <p class="overview-value"><span id="overview-daily">0</span><span class="overview-sep"> / </span><span id="overview-daily-total">0</span></p>
-          </div>
-          <p class="overview-note">当天实际投稿数量</p>
         </article>
         <article class="overview-card">
           <p class="overview-label">累计浏览量</p>
@@ -231,10 +224,93 @@
     </div>
   </div>
 
+  <!-- 修改素材弹窗 -->
+  <div class="modal" id="edit-modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+      <div class="modal-head">
+        <h2 id="edit-modal-title">修改素材</h2>
+        <button type="button" class="modal-close" id="edit-close" aria-label="关闭修改素材弹窗">×</button>
+      </div>
+
+      <form class="modal-body upload-form" id="edit-form" novalidate>
+        <div class="form-grid">
+          <div class="form-field form-field-full">
+            <label for="edit-title">标题 <span class="required">*</span></label>
+            <input id="edit-title" name="title" type="text" maxlength="60" placeholder="请输入素材标题">
+            <p class="field-error" id="edit-title-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="edit-author">作者 <span class="required">*</span></label>
+            <input id="edit-author" name="author" type="text" maxlength="30" placeholder="请输入作者姓名">
+            <p class="field-error" id="edit-author-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="edit-author-role">身份地区</label>
+            <input id="edit-author-role" name="authorRole" type="text" maxlength="40"
+                   placeholder="如：教师，湖南">
+          </div>
+
+          <div class="form-field">
+            <label for="edit-location">地点</label>
+            <input id="edit-location" name="location" type="text" maxlength="60" placeholder="请输入素材所在地点">
+          </div>
+
+          <div class="form-field">
+            <label for="edit-date">日期</label>
+            <input id="edit-date" name="date" type="date">
+          </div>
+
+          <div class="form-field">
+            <label for="edit-series">系列 <span class="required">*</span></label>
+            <input id="edit-series" name="series" type="text" maxlength="30" placeholder="如：革命文物系列">
+            <p class="field-error" id="edit-series-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="edit-tags">标签</label>
+            <input id="edit-tags" name="tags" type="text" maxlength="100"
+                   placeholder="多个标签用逗号分隔，如：长征, 旧址">
+          </div>
+
+          <div class="form-field">
+            <label for="edit-views">浏览量 <span class="required">*</span></label>
+            <input id="edit-views" name="views" type="number" min="0" step="1" inputmode="numeric">
+            <p class="field-error" id="edit-views-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field">
+            <label for="edit-downloads">下载量 <span class="required">*</span></label>
+            <input id="edit-downloads" name="downloads" type="number" min="0" step="1" inputmode="numeric">
+            <p class="field-error" id="edit-downloads-error" role="alert" hidden></p>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="edit-intro">简介 <span class="required">*</span></label>
+            <textarea id="edit-intro" name="intro" rows="4" maxlength="2000"
+                      placeholder="请填写素材简介"></textarea>
+            <p class="field-error" id="edit-intro-error" role="alert" hidden></p>
+          </div>
+        </div>
+
+        <p class="field-hint">修改保存在当前浏览器本地，首页、详情页与后台读取同一层数据；配图与音频不在此处修改。</p>
+
+        <p class="form-error" id="edit-error" role="alert" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="edit-cancel">取消</button>
+          <button type="submit" class="btn btn-red" id="edit-submit">保存修改</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="admin-toast" class="admin-toast" role="status" aria-live="polite"></div>
 
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=20261117d"></script>
 </body>
 </html>

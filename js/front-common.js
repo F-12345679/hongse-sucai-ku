@@ -7,8 +7,11 @@
 
   var CUSTOM_KEY = 'hongse_custom_materials_v1';
   var STATS_KEY = 'hongse_material_stats_v1';
-  var SEED_STATS_KEY = 'hongse_material_seed_stats_v1';
+  var SEED_STATS_KEY = 'hongse_material_seed_stats_v2';
+  var OVERRIDES_KEY = 'hongse_material_overrides_v1';
   var ID_COUNTER_KEY = 'hongse_custom_id_counter_v1';
+  /* 后台“修改素材”可覆盖的文本字段，逐字段按 id 覆盖 */
+  var OVERRIDE_TEXT_FIELDS = ['title', 'author', 'authorRole', 'location', 'date', 'series', 'intro'];
   var SEED_VIEWS_MIN = 800;
   var SEED_VIEWS_MAX = 1199;
   var SEED_DOWNLOADS_MIN = 180;
@@ -140,6 +143,76 @@
     }
   }
 
+  /* ---------- 按 id 覆盖层（后台修改素材） ----------
+     纯静态站点没有后端，修改结果写成一层按 id 覆盖的本地存储；
+     首页、详情页、后台都经由 getAllMaterials 读取，保证三处同源。 */
+  function getOverrides() {
+    var map = readJSON(OVERRIDES_KEY, {});
+    if (!map || typeof map !== 'object' || Array.isArray(map)) return {};
+    return map;
+  }
+
+  function saveOverrides(map) {
+    try {
+      global.localStorage.setItem(OVERRIDES_KEY, JSON.stringify(map));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function normalizeTagList(tags) {
+    var list = Array.isArray(tags) ? tags : String(tags == null ? '' : tags).split(/[,，]/);
+    var result = [];
+    list.forEach(function (tag) {
+      var text = String(tag == null ? '' : tag).trim();
+      if (text && result.indexOf(text) === -1) result.push(text);
+    });
+    return result;
+  }
+
+  function saveMaterialOverride(id, fields) {
+    var key = String(id);
+    var map = getOverrides();
+    var current = map[key] && typeof map[key] === 'object' && !Array.isArray(map[key]) ? map[key] : {};
+    var next = {};
+
+    Object.keys(current).forEach(function (field) {
+      next[field] = current[field];
+    });
+
+    OVERRIDE_TEXT_FIELDS.forEach(function (field) {
+      if (!fields || !Object.prototype.hasOwnProperty.call(fields, field)) return;
+      next[field] = String(fields[field] == null ? '' : fields[field]).trim();
+    });
+    if (fields && Object.prototype.hasOwnProperty.call(fields, 'tags')) {
+      next.tags = normalizeTagList(fields.tags);
+    }
+    ['views', 'downloads'].forEach(function (field) {
+      if (!fields || !Object.prototype.hasOwnProperty.call(fields, field)) return;
+      next[field] = toCount(fields[field], 0);
+    });
+
+    map[key] = next;
+    if (!saveOverrides(map)) return false;
+
+    /* 覆盖值是绝对值，清掉该素材此前的浏览/下载增量，避免与覆盖值叠加 */
+    var stats = getStats();
+    if (Object.prototype.hasOwnProperty.call(stats, key)) {
+      delete stats[key];
+      saveStats(stats);
+    }
+    return true;
+  }
+
+  function clearMaterialOverride(id) {
+    var key = String(id);
+    var map = getOverrides();
+    if (!Object.prototype.hasOwnProperty.call(map, key)) return true;
+    delete map[key];
+    return saveOverrides(map);
+  }
+
   function ensureSeedStats(originals) {
     var seeds = getSeedStats();
     var changed = false;
@@ -162,6 +235,17 @@
 
       var views = randomInt(SEED_VIEWS_MIN, SEED_VIEWS_MAX);
       var downloads = randomInt(SEED_DOWNLOADS_MIN, SEED_DOWNLOADS_MAX);
+
+      /* 数据源已给定浏览/下载基数时以数据源为准，保证列表页与详情页展示一致 */
+      var baseViews = Number(material.views);
+      var baseDownloads = Number(material.downloads);
+      if (isFinite(baseViews) && baseViews >= 0) {
+        views = Math.floor(baseViews);
+        downloads = isFinite(baseDownloads) && baseDownloads >= 0
+          ? Math.floor(baseDownloads)
+          : 0;
+      }
+
       if (downloads > views) downloads = views;
       seeds[key] = { views: views, downloads: downloads };
       changed = true;
@@ -171,14 +255,30 @@
     return seeds;
   }
 
-  function applyStats(material, stats, seeds) {
+  function applyStats(material, stats, seeds, overrides) {
     var copy = cloneMaterial(material);
     var key = String(material.id);
     var entry = stats[key] && typeof stats[key] === 'object' ? stats[key] : {};
     var seed = seeds[key] && typeof seeds[key] === 'object' ? seeds[key] : {};
+    var override = overrides && overrides[key] && typeof overrides[key] === 'object' &&
+      !Array.isArray(overrides[key]) ? overrides[key] : null;
 
-    copy.views = toCount(seed.views, 0) + toCount(entry.views, 0);
-    copy.downloads = toCount(seed.downloads, 0) + toCount(entry.downloads, 0);
+    if (override) {
+      OVERRIDE_TEXT_FIELDS.forEach(function (field) {
+        if (Object.prototype.hasOwnProperty.call(override, field)) {
+          copy[field] = String(override[field] == null ? '' : override[field]);
+        }
+      });
+      if (Array.isArray(override.tags)) copy.tags = override.tags.slice();
+    }
+
+    var baseViews = override && override.views != null ? toCount(override.views, 0) : toCount(seed.views, 0);
+    var baseDownloads = override && override.downloads != null
+      ? toCount(override.downloads, 0)
+      : toCount(seed.downloads, 0);
+
+    copy.views = baseViews + toCount(entry.views, 0);
+    copy.downloads = baseDownloads + toCount(entry.downloads, 0);
     return copy;
   }
 
@@ -186,10 +286,11 @@
     var stats = getStats();
     var originals = getOriginalMaterials();
     var seeds = ensureSeedStats(originals);
+    var overrides = getOverrides();
     return originals
       .concat(getCustomMaterials())
       .map(function (material) {
-        return applyStats(material, stats, seeds);
+        return applyStats(material, stats, seeds, overrides);
       });
   }
 
@@ -741,6 +842,7 @@
     CUSTOM_KEY: CUSTOM_KEY,
     STATS_KEY: STATS_KEY,
     SEED_STATS_KEY: SEED_STATS_KEY,
+    OVERRIDES_KEY: OVERRIDES_KEY,
     getOriginalMaterials: getOriginalMaterials,
     getCustomMaterials: getCustomMaterials,
     saveCustomMaterials: saveCustomMaterials,
@@ -749,6 +851,9 @@
     getStats: getStats,
     saveStats: saveStats,
     getSeedStats: getSeedStats,
+    getOverrides: getOverrides,
+    saveMaterialOverride: saveMaterialOverride,
+    clearMaterialOverride: clearMaterialOverride,
     getAllMaterials: getAllMaterials,
     getMaterialById: getMaterialById,
     incrementStat: incrementStat,

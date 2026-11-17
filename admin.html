@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>数据看板 · 管理后台 · 红色文化数字基因库</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
   <link rel="stylesheet" href="css/common.css">
   <link rel="stylesheet" href="css/admin.css">
 </head>
@@ -23,93 +24,12 @@
   </header>
 
   <main class="admin-main">
-    <section id="dashboard" class="admin-section" aria-labelledby="dashboard-title">
+    <section id="dashboard" class="admin-section dashboard-section" aria-labelledby="dashboard-title">
       <div class="section-head">
         <div>
           <h1 id="dashboard-title">数据看板</h1>
-          <p class="section-desc">全部数据来自原始素材与本地投稿的实时统计</p>
         </div>
       </div>
-
-      <section class="stat-grid" aria-label="核心指标">
-        <article class="stat-card">
-          <span class="stat-icon icon-red" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
-              <path d="M14 3v5h5M9 13h6M9 17h4"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-total">0</p>
-            <p class="stat-label">素材总数</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-gold" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
-              <circle cx="12" cy="12" r="2.5"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-views">0</p>
-            <p class="stat-label">累计浏览量</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-warm" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-downloads">0</p>
-            <p class="stat-label">累计下载量</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-flame" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-              <path d="M12 2c.5 3.2-1.5 4.7-2.9 6.4-1 1.3-1.7 2.6-1.7 4.2a5.6 5.6 0 0 0 11.2 0c0-1.5-.6-2.9-1.6-4.2-.2 1.2-.7 2-1.4 2.5C15.5 7.8 14.2 4.7 12 2Z"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value stat-value-title" id="stat-hot-title">暂无数据</p>
-            <p class="stat-label">当前热度冠军</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-gold" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="4" width="7" height="7" rx="1.5"/>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value" id="stat-type-count">0</p>
-            <p class="stat-label" id="stat-type-note">素材类型数量</p>
-          </div>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-icon icon-red" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="16" rx="2"/>
-              <path d="M16 3v4M8 3v4M3 10h18"/>
-            </svg>
-          </span>
-          <div class="stat-body">
-            <p class="stat-value"><span id="stat-daily-published">0</span><span class="stat-sep"> / </span><span id="stat-daily-total">0</span></p>
-            <p class="stat-label">今日上新 / 素材总量</p>
-          </div>
-        </article>
-      </section>
 
       <div class="dashboard-grid">
         <section class="panel panel-hot" aria-labelledby="hot-title">
@@ -133,19 +53,65 @@
           </div>
         </section>
 
-        <aside class="dashboard-side" aria-label="分布图表">
-          <section class="panel panel-chart" aria-labelledby="type-chart-title">
-            <div class="panel-head">
-              <h2 class="panel-title" id="type-chart-title">类型分布</h2>
+        <aside class="dashboard-side" aria-label="核心指标与类型分布">
+          <section class="stat-grid stat-grid-side" aria-label="核心指标">
+          <article class="stat-card">
+            <span class="stat-icon icon-red" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 3v5h5M9 13h6M9 17h4"/>
+              </svg>
+            </span>
+            <div class="stat-body">
+              <p class="stat-value" id="stat-total">0</p>
+              <p class="stat-label">素材总数</p>
             </div>
-            <div class="bar-chart" id="type-chart"></div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon icon-gold" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                <circle cx="12" cy="12" r="2.5"/>
+              </svg>
+            </span>
+            <div class="stat-body">
+              <p class="stat-value" id="stat-views">0</p>
+              <p class="stat-label">累计浏览量</p>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon icon-warm" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>
+              </svg>
+            </span>
+            <div class="stat-body">
+              <p class="stat-value" id="stat-downloads">0</p>
+              <p class="stat-label">累计下载量</p>
+            </div>
+          </article>
+
+          <article class="stat-card">
+            <span class="stat-icon icon-flame" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <path d="M12 2c.5 3.2-1.5 4.7-2.9 6.4-1 1.3-1.7 2.6-1.7 4.2a5.6 5.6 0 0 0 11.2 0c0-1.5-.6-2.9-1.6-4.2-.2 1.2-.7 2-1.4 2.5C15.5 7.8 14.2 4.7 12 2Z"/>
+              </svg>
+            </span>
+            <div class="stat-body">
+              <p class="stat-value stat-value-title" id="stat-hot-title">暂无数据</p>
+              <p class="stat-label">当前热度冠军</p>
+            </div>
+          </article>
           </section>
 
-          <section class="panel panel-chart" aria-labelledby="series-chart-title">
+          <section class="panel panel-chart panel-donut" aria-labelledby="type-chart-title">
             <div class="panel-head">
-              <h2 class="panel-title" id="series-chart-title">系列分布</h2>
+              <h2 class="panel-title" id="type-chart-title">类型分布</h2>
+              <span class="panel-note">按素材所含类型统计</span>
             </div>
-            <div class="bar-chart" id="series-chart"></div>
+            <div class="donut-chart" id="type-chart"></div>
           </section>
         </aside>
       </div>
@@ -156,6 +122,6 @@
 
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/admin.js?v=20261117d"></script>
 </body>
 </html>

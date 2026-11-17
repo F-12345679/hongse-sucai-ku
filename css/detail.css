@@ -361,3 +361,400 @@ body {
   font-weight: 800;
   color: #6f090f;
 }
+
+/* ============================================
+   2026-11 视觉升级 · 详情页
+   ============================================ */
+
+.detail-page {
+  max-width: 1380px;
+  padding: 18px 44px 72px;
+}
+
+.back-link {
+  margin-bottom: 20px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .7);
+  border: 1px solid rgba(140, 13, 20, .1);
+  box-shadow: 0 8px 18px -14px rgba(111, 9, 15, .5);
+  transition: background .2s ease, transform .2s var(--ease-soft), box-shadow .2s ease;
+}
+
+.back-link:hover {
+  background: #fff;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px -14px rgba(111, 9, 15, .6);
+}
+
+.detail-card {
+  border-radius: 22px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.detail-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+}
+
+.detail-left {
+  padding: 30px;
+  background:
+    linear-gradient(160deg, rgba(255, 252, 247, .72), rgba(250, 243, 233, .5));
+  border-right: 1px solid rgba(140, 13, 20, .08);
+}
+
+.detail-cover {
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f2eade, #e8ddcc);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .6),
+    0 18px 38px -22px rgba(90, 44, 22, .55);
+}
+
+.detail-cover img {
+  object-position: center;
+  transition: transform .6s var(--ease-soft);
+}
+
+.detail-card:hover .detail-cover img {
+  transform: scale(1.02);
+}
+
+.audio-box {
+  background: rgba(255, 255, 255, .74);
+  border: 1px solid rgba(255, 255, 255, .85);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 12px 26px -20px rgba(90, 44, 22, .45);
+}
+
+.audio-box audio {
+  margin-top: 2px;
+  border-radius: 999px;
+}
+
+.detail-right {
+  padding: 38px 40px 40px;
+}
+
+.detail-title {
+  font-size: 34px;
+  line-height: 1.32;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+.detail-author {
+  margin-top: 12px;
+  font-size: 14px;
+  letter-spacing: .3px;
+}
+
+.detail-meta {
+  gap: 10px 26px;
+  margin-top: 18px;
+  padding: 16px 0;
+  border-color: rgba(140, 13, 20, .09);
+}
+
+.detail-tags {
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.detail-intro {
+  margin-top: 24px;
+  padding: 22px 24px;
+  background:
+    linear-gradient(160deg, rgba(255, 249, 246, .86), rgba(253, 243, 243, .7));
+  border-left: 4px solid var(--main-red);
+  border-radius: 0 14px 14px 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .8),
+    0 16px 32px -26px rgba(111, 9, 15, .5);
+  font-size: 15px;
+  line-height: 1.9;
+  letter-spacing: .2px;
+  white-space: pre-line;
+}
+
+.image-source {
+  margin-top: 16px;
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.image-source a {
+  color: #8c0d14;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(140, 13, 20, .4);
+}
+
+.image-source a:hover {
+  border-bottom-color: #8c0d14;
+}
+
+.related-section {
+  margin-top: 42px;
+}
+
+.related-grid {
+  gap: 26px;
+}
+
+.related-card {
+  border-radius: 18px;
+  background: var(--glass-bg);
+}
+
+.related-cover {
+  aspect-ratio: 16 / 10;
+}
+
+.related-body {
+  padding: 16px 18px 18px;
+}
+
+.related-title {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.related-card:hover,
+.related-card:focus-visible {
+  transform: translateY(-6px);
+  border-color: rgba(217, 164, 65, .62);
+  box-shadow: var(--shadow-lift);
+}
+
+.site-footer {
+  padding-bottom: 40px;
+}
+
+
+@media (max-width: 980px) {
+  .detail-page { padding: 18px 26px 64px; }
+  .detail-right { padding: 30px 28px 32px; }
+  .detail-left { padding: 24px; }
+  .detail-title { font-size: 30px; }
+}
+
+@media (max-width: 860px) {
+  .detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-left {
+    border-right: none;
+    border-bottom: 1px solid rgba(140, 13, 20, .08);
+  }
+  .detail-cover { max-width: 720px; margin: 0 auto; }
+  .audio-box { max-width: 720px; margin: 0 auto; }
+  .detail-actions { justify-content: center; }
+}
+
+@media (max-width: 640px) {
+  .detail-page { padding: 20px 16px 56px; }
+  .detail-left { padding: 16px; }
+  .detail-right { padding: 24px 18px 26px; }
+  .detail-title { font-size: 24px; letter-spacing: .4px; }
+  .detail-intro { padding: 18px; font-size: 14.5px; }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-card:hover .detail-cover img { transform: none; }
+}
+
+/* ---------- 简介正文：填满右栏，超长时卡片内滚动 ---------- */
+.intro-shell {
+  position: relative;
+  margin-top: 24px;
+}
+
+.intro-shell .detail-intro {
+  margin-top: 0;
+  height: min(360px, 44vh);
+  padding-right: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 13, 20, .26) transparent;
+}
+
+.intro-shell .detail-intro::-webkit-scrollbar {
+  width: 6px;
+}
+
+.intro-shell .detail-intro::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.intro-shell .detail-intro::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(140, 13, 20, .22);
+}
+
+.intro-shell .detail-intro::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 13, 20, .4);
+}
+
+.intro-shell::before,
+.intro-shell::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 8px;
+  height: 26px;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+.intro-shell::before {
+  top: 0;
+  border-radius: 0 14px 0 0;
+  background: linear-gradient(180deg, #fdf3f3, rgba(253, 243, 243, 0));
+}
+
+.intro-shell::after {
+  bottom: 0;
+  border-radius: 0 0 14px 0;
+  background: linear-gradient(0deg, #fdf3f3, rgba(253, 243, 243, 0));
+}
+
+.intro-shell.has-scroll:not(.at-top)::before,
+.intro-shell.has-scroll:not(.at-bottom)::after {
+  opacity: 1;
+}
+
+/* ---------- AI 助手：详情页触发按钮上方的浮层 ---------- */
+.ai-widget--anchored {
+  position: static;
+  right: auto;
+  bottom: auto;
+}
+
+#ai-panel.ai-panel--anchored {
+  position: fixed;
+  left: var(--ai-anchor-left, 24px);
+  top: auto;
+  right: auto;
+  bottom: var(--ai-anchor-bottom, 120px);
+  width: 372px;
+  max-width: calc(100vw - 24px);
+  max-height: var(--ai-anchor-max, 60vh);
+  z-index: 310;
+  border-radius: 18px;
+  transform-origin: bottom right;
+  animation: aiAnchorIn .22s var(--ease-soft);
+}
+
+@keyframes aiAnchorIn {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 640px) {
+  #ai-panel.ai-panel--anchored {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ai-panel.ai-panel--anchored { animation: none; }
+}
+
+/* AI 入口按钮：与「下载 / 返回首页」同一套视觉语言 */
+.ai-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-entry-spark {
+  color: var(--gold);
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ============================================
+   桌面端：详情卡定高约 730px（按视口宽度同比缩放）
+   图片弹性裁切，简介在卡片内滚动；页面恢复自然滚动
+   ============================================ */
+@media (min-width: 1024px) {
+  /* 胶囊贴近卡片上沿，卡片内首行内容与胶囊保持约 28px 视觉间距 */
+  .back-link {
+    margin-bottom: 4px;
+  }
+
+  .detail-card {
+    height: clamp(497px, calc(100vw * 0.479), 690px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-grid {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .detail-left,
+  .detail-right {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .detail-left {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px 18px;
+  }
+
+  .detail-cover {
+    flex: 1 1 auto;
+    min-height: 120px;
+    aspect-ratio: auto;
+  }
+
+  .detail-cover img {
+    height: 100%;
+  }
+
+  .detail-actions {
+    flex: none;
+    margin-top: 14px;
+  }
+
+  .detail-right {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 26px 22px;
+  }
+
+  .detail-right > .detail-title,
+  .detail-right > .detail-author,
+  .detail-right > .detail-meta,
+  .detail-right > .detail-tags,
+  .detail-right > .image-source {
+    flex: none;
+  }
+
+  .intro-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+  }
+
+  .intro-shell .detail-intro {
+    flex: 1;
+    min-height: 110px;
+    height: auto;
+  }
+}

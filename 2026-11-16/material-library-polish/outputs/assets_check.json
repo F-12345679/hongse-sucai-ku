@@ -1,0 +1,375 @@
+{
+  "audio_total": 50,
+  "audio_playable": 50,
+  "audio_unique_hashes": 50,
+  "audio_duplicates": [],
+  "music_count": 8,
+  "music_durations": [
+    38.1,
+    45.1,
+    52.1,
+    39.1,
+    46.1,
+    58.1,
+    60.1,
+    41.1
+  ],
+  "tts_count": 42,
+  "tts_duration_min": 35.2,
+  "tts_duration_max": 52.2,
+  "tts_unique_durations": 37,
+  "docs_ok": 40,
+  "docs_total": 40,
+  "durations": [
+    {
+      "tag": "ok",
+      "duration": 42.66,
+      "err": null,
+      "idx": 1,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 49.428,
+      "err": null,
+      "idx": 2,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 36.396,
+      "err": null,
+      "idx": 3,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 38.060375,
+      "err": null,
+      "idx": 4,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 45.061125,
+      "err": null,
+      "idx": 5,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 52.062,
+      "err": null,
+      "idx": 6,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 35.604,
+      "err": null,
+      "idx": 7,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 45.468,
+      "err": null,
+      "idx": 8,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 44.136,
+      "err": null,
+      "idx": 9,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 43.992,
+      "err": null,
+      "idx": 10,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 43.308,
+      "err": null,
+      "idx": 11,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 37.44,
+      "err": null,
+      "idx": 12,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 46.044,
+      "err": null,
+      "idx": 13,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 45.216,
+      "err": null,
+      "idx": 14,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 40.068,
+      "err": null,
+      "idx": 15,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 40.464,
+      "err": null,
+      "idx": 16,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 35.172,
+      "err": null,
+      "idx": 17,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 41.616,
+      "err": null,
+      "idx": 18,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 39.053,
+      "err": null,
+      "idx": 19,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 46.053875,
+      "err": null,
+      "idx": 20,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 39.42,
+      "err": null,
+      "idx": 21,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 44.64,
+      "err": null,
+      "idx": 22,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 36.396,
+      "err": null,
+      "idx": 23,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 49.464,
+      "err": null,
+      "idx": 24,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 52.164,
+      "err": null,
+      "idx": 25,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 44.424,
+      "err": null,
+      "idx": 26,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 47.628,
+      "err": null,
+      "idx": 27,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 43.992,
+      "err": null,
+      "idx": 28,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 43.596,
+      "err": null,
+      "idx": 29,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 37.836,
+      "err": null,
+      "idx": 30,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 42.156,
+      "err": null,
+      "idx": 31,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 38.988,
+      "err": null,
+      "idx": 32,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 44.352,
+      "err": null,
+      "idx": 33,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 37.8,
+      "err": null,
+      "idx": 34,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 38.592,
+      "err": null,
+      "idx": 35,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 42.012,
+      "err": null,
+      "idx": 36,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 41.976,
+      "err": null,
+      "idx": 37,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 42.444,
+      "err": null,
+      "idx": 38,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 39.816,
+      "err": null,
+      "idx": 39,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 37.62,
+      "err": null,
+      "idx": 40,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 36.216,
+      "err": null,
+      "idx": 41,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 35.964,
+      "err": null,
+      "idx": 42,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 40.32,
+      "err": null,
+      "idx": 43,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 58.070125,
+      "err": null,
+      "idx": 44,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 41.292,
+      "err": null,
+      "idx": 45,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 36.972,
+      "err": null,
+      "idx": 46,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 35.352,
+      "err": null,
+      "idx": 47,
+      "mode": "tts"
+    },
+    {
+      "tag": "ok",
+      "duration": 60.0555,
+      "err": null,
+      "idx": 48,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 41.064375,
+      "err": null,
+      "idx": 49,
+      "mode": "music"
+    },
+    {
+      "tag": "ok",
+      "duration": 37.26,
+      "err": null,
+      "idx": 50,
+      "mode": "tts"
+    }
+  ]
+}

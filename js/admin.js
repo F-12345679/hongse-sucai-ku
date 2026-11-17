@@ -81,16 +81,6 @@
     return '';
   }
 
-  function materialDateKey(material) {
-    if (!material) return '';
-    var fields = ['date', 'publishDate', 'publishTime', 'createdAt', 'createDate'];
-    for (var i = 0; i < fields.length; i += 1) {
-      var key = normalizeDateValue(material[fields[i]]);
-      if (key) return key;
-    }
-    return '';
-  }
-
   function getCustomMaterials() {
     var api = window.HongseFront;
     return api && typeof api.getCustomMaterials === 'function'
@@ -127,15 +117,6 @@
     }
   }
 
-  function getTodayCustomCount() {
-    var todayKey = todayString();
-    return getCustomMaterials().filter(function (item) {
-      var created = normalizeDateValue(item.createdAt || item.createDate);
-      var key = created || materialDateKey(item);
-      return key === todayKey;
-    }).length;
-  }
-
   function showAdminToast(message) {
     var toast = byId('admin-toast');
     if (!toast) return;
@@ -165,25 +146,15 @@
     renderDashboardStats(materials);
     renderHotTable(materials);
     renderTypeChart(materials);
-    renderSeriesChart(materials);
   }
 
   function renderDashboardStats(materials) {
     var views = 0;
     var downloads = 0;
-    var seriesMap = {};
 
     materials.forEach(function (material) {
       views += toCount(material.views);
       downloads += toCount(material.downloads);
-      if (material.series) seriesMap[material.series] = true;
-    });
-
-    var typeSet = {};
-    materials.forEach(function (material) {
-      typeList(material).forEach(function (type) {
-        typeSet[type] = true;
-      });
     });
 
     var champion = materials.slice().sort(function (a, b) {
@@ -194,10 +165,6 @@
     setText('stat-views', views);
     setText('stat-downloads', downloads);
     setText('stat-hot-title', champion ? (champion.title || '未命名素材') : '暂无数据');
-    setText('stat-type-count', Object.keys(typeSet).length);
-    setText('stat-type-note', '素材类型数量（系列 ' + Object.keys(seriesMap).length + ' 个）');
-    setText('stat-daily-published', getTodayCustomCount());
-    setText('stat-daily-total', materials.length);
   }
 
   function renderHotTable(materials) {
@@ -263,51 +230,10 @@
     });
   }
 
-  function renderBarChart(container, entries, colorClass) {
-    if (!container) return;
-    container.textContent = '';
-
-    if (!entries.length) {
-      var empty = document.createElement('p');
-      empty.className = 'bar-empty';
-      empty.textContent = '暂无数据';
-      container.appendChild(empty);
-      return;
-    }
-
-    var max = entries.reduce(function (maxValue, entry) {
-      return Math.max(maxValue, entry.value);
-    }, 1);
-
-    entries.forEach(function (entry) {
-      var row = document.createElement('div');
-      row.className = 'bar-row';
-
-      var head = document.createElement('div');
-      head.className = 'bar-head';
-      var label = document.createElement('span');
-      label.className = 'bar-label';
-      label.textContent = entry.label;
-      var value = document.createElement('span');
-      value.className = 'bar-value';
-      value.textContent = String(entry.value);
-      head.appendChild(label);
-      head.appendChild(value);
-      row.appendChild(head);
-
-      var track = document.createElement('div');
-      track.className = 'bar-track';
-      var fill = document.createElement('div');
-      fill.className = 'bar-fill ' + (entry.colorClass || colorClass || '');
-      fill.style.width = Math.max(entry.value > 0 ? 4 : 0, Math.round(entry.value / max * 100)) + '%';
-      track.appendChild(fill);
-      row.appendChild(track);
-
-      container.appendChild(row);
-    });
-  }
-
   function renderTypeChart(materials) {
+    var container = byId('type-chart');
+    if (!container) return;
+
     var counts = {};
     TYPE_META.forEach(function (meta) { counts[meta.name] = 0; });
 
@@ -321,28 +247,101 @@
       });
     });
 
-    var colors = { '文档': 'bar-red', '音频': 'bar-gold', '配图': 'bar-green' };
+    var colors = { '文档': '#a50f17', '音频': '#d9a441', '配图': '#5f8a63' };
     var entries = TYPE_META.map(function (meta) {
-      return { label: meta.name, value: counts[meta.name], colorClass: colors[meta.name] };
+      return { label: meta.name, value: counts[meta.name], color: colors[meta.name] };
     });
-    renderBarChart(byId('type-chart'), entries, 'bar-red');
-  }
+    var total = entries.reduce(function (sum, entry) {
+      return sum + entry.value;
+    }, 0);
 
-  function renderSeriesChart(materials) {
-    var counts = {};
-    materials.forEach(function (material) {
-      var series = material.series || '未分类';
-      counts[series] = (counts[series] || 0) + 1;
+    container.textContent = '';
+
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+    var RADIUS = 76;
+    var CIRCUM = 2 * Math.PI * RADIUS;
+    var GAP = 8;
+
+    var visual = document.createElement('div');
+    visual.className = 'donut-visual';
+
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 200 200');
+    svg.setAttribute('class', 'donut-svg');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', '素材类型分布环形图');
+
+    var track = document.createElementNS(SVG_NS, 'circle');
+    track.setAttribute('cx', '100');
+    track.setAttribute('cy', '100');
+    track.setAttribute('r', String(RADIUS));
+    track.setAttribute('fill', 'none');
+    track.setAttribute('stroke', '#f6ece2');
+    track.setAttribute('stroke-width', '26');
+    svg.appendChild(track);
+
+    if (total > 0) {
+      var cursor = 0;
+      entries.forEach(function (entry) {
+        if (entry.value <= 0) return;
+        var arc = (entry.value / total) * CIRCUM;
+        var length = Math.max(arc - GAP, 1);
+        var segment = document.createElementNS(SVG_NS, 'circle');
+        segment.setAttribute('cx', '100');
+        segment.setAttribute('cy', '100');
+        segment.setAttribute('r', String(RADIUS));
+        segment.setAttribute('fill', 'none');
+        segment.setAttribute('stroke', entry.color);
+        segment.setAttribute('stroke-width', '26');
+        segment.setAttribute('stroke-dasharray', length.toFixed(2) + ' ' + (CIRCUM - length).toFixed(2));
+        segment.setAttribute('stroke-dashoffset', (-(cursor + GAP / 2)).toFixed(2));
+        segment.setAttribute('transform', 'rotate(-90 100 100)');
+        svg.appendChild(segment);
+        cursor += arc;
+      });
+    }
+
+    visual.appendChild(svg);
+
+    var hole = document.createElement('div');
+    hole.className = 'donut-hole';
+    var totalValue = document.createElement('span');
+    totalValue.className = 'donut-total';
+    totalValue.textContent = String(total);
+    var totalNote = document.createElement('span');
+    totalNote.className = 'donut-total-note';
+    totalNote.textContent = '类型计数';
+    hole.appendChild(totalValue);
+    hole.appendChild(totalNote);
+    visual.appendChild(hole);
+    container.appendChild(visual);
+
+    var legend = document.createElement('ul');
+    legend.className = 'donut-legend';
+    entries.forEach(function (entry) {
+      var item = document.createElement('li');
+      item.className = 'donut-item';
+
+      var dot = document.createElement('i');
+      dot.className = 'donut-dot';
+      dot.style.background = entry.color;
+      dot.setAttribute('aria-hidden', 'true');
+
+      var name = document.createElement('span');
+      name.className = 'donut-name';
+      name.textContent = entry.label;
+
+      var meta = document.createElement('span');
+      meta.className = 'donut-meta';
+      var percent = total > 0 ? (entry.value / total) * 100 : 0;
+      meta.textContent = (Math.round(percent * 10) / 10) + '%';
+
+      item.appendChild(dot);
+      item.appendChild(name);
+      item.appendChild(meta);
+      legend.appendChild(item);
     });
-
-    var palette = ['bar-red', 'bar-gold', 'bar-green'];
-    var entries = Object.keys(counts).map(function (series, index) {
-      return { label: series, value: counts[series], colorClass: palette[index % palette.length] };
-    }).sort(function (a, b) {
-      return b.value - a.value;
-    });
-
-    renderBarChart(byId('series-chart'), entries, 'bar-gold');
+    container.appendChild(legend);
   }
 
   /* ============================================
@@ -472,6 +471,7 @@
 
     /* 同步清理浏览量、下载量增量与演示基数记录 */
     api.clearMaterialStats(id);
+    if (typeof api.clearMaterialOverride === 'function') api.clearMaterialOverride(id);
     return true;
   }
 
@@ -491,6 +491,19 @@
     sep.setAttribute('aria-hidden', 'true');
     sep.textContent = '·';
     cell.appendChild(sep);
+
+    var edit = document.createElement('button');
+    edit.type = 'button';
+    edit.className = 'link-action';
+    edit.textContent = '修改';
+    edit.addEventListener('click', function () { openEditModal(material); });
+    cell.appendChild(edit);
+
+    var sep2 = document.createElement('span');
+    sep2.className = 'action-sep';
+    sep2.setAttribute('aria-hidden', 'true');
+    sep2.textContent = '·';
+    cell.appendChild(sep2);
 
     if (customIds[String(material.id)]) {
       var remove = document.createElement('button');
@@ -587,6 +600,7 @@
     var tbody = byId('material-tbody');
     if (!tbody) return;
     renderMaterialRows(tbody);
+    syncStickyTableHead();
   }
 
   function updateOverviewCards() {
@@ -603,8 +617,6 @@
 
     setText('overview-total', materials.length);
     setText('overview-total-note', '原始 ' + originalCount + ' · 投稿 ' + customCount);
-    setText('overview-daily', getTodayCustomCount());
-    setText('overview-daily-total', materials.length);
     setText('overview-views', views);
     setText('overview-downloads', downloads);
   }
@@ -1193,12 +1205,290 @@
     });
   }
 
+  /* ============================================
+     修改素材弹窗：按 id 覆盖到本地存储
+     首页、详情页、后台均经由 HongseFront.getAllMaterials 读取同一层覆盖
+     ============================================ */
+  var editingId = '';
+  var editSaving = false;
+
+  function setEditField(id, value) {
+    var input = byId(id);
+    if (input) input.value = value == null ? '' : String(value);
+  }
+
+  function getEditFieldValue(id) {
+    var input = byId(id);
+    return input ? String(input.value).trim() : '';
+  }
+
+  function clearEditErrors() {
+    ['edit-title', 'edit-author', 'edit-series', 'edit-intro', 'edit-views', 'edit-downloads']
+      .forEach(function (field) {
+        clearFieldError(field, field + '-error');
+      });
+    var node = byId('edit-error');
+    if (node) node.hidden = true;
+  }
+
+  function showEditError(message) {
+    var node = byId('edit-error');
+    if (!node) return;
+    node.textContent = message;
+    node.hidden = false;
+  }
+
+  function openEditModal(material) {
+    var modal = byId('edit-modal');
+    if (!modal || !material) return;
+
+    editingId = String(material.id);
+    editSaving = false;
+
+    var submitBtn = byId('edit-submit');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '保存修改';
+    }
+
+    setEditField('edit-title', material.title);
+    setEditField('edit-author', material.author);
+    setEditField('edit-author-role', material.authorRole);
+    setEditField('edit-location', material.location);
+    setEditField('edit-date', normalizeDateValue(material.date));
+    setEditField('edit-series', material.series);
+    setEditField('edit-tags', Array.isArray(material.tags) ? material.tags.join('，') : material.tags);
+    setEditField('edit-intro', material.intro);
+    setEditField('edit-views', toCount(material.views));
+    setEditField('edit-downloads', toCount(material.downloads));
+
+    clearEditErrors();
+    modal.hidden = false;
+    document.body.classList.add('modal-open');
+    var title = byId('edit-title');
+    if (title) title.focus();
+  }
+
+  function closeEditModal() {
+    var modal = byId('edit-modal');
+    if (modal) modal.hidden = true;
+    document.body.classList.remove('modal-open');
+    editingId = '';
+    editSaving = false;
+    var form = byId('edit-form');
+    if (form) form.reset();
+    clearEditErrors();
+  }
+
+  function readEditCount(id, label) {
+    var text = getEditFieldValue(id);
+    if (!/^\d+$/.test(text)) {
+      return { error: label + '需填写 0 或正整数。', value: 0 };
+    }
+    return { error: '', value: Number(text) };
+  }
+
+  function handleEditSubmit(event) {
+    event.preventDefault();
+    if (editSaving) return;
+    clearEditErrors();
+
+    var title = getEditFieldValue('edit-title');
+    var author = getEditFieldValue('edit-author');
+    var series = getEditFieldValue('edit-series');
+    var intro = getEditFieldValue('edit-intro');
+    var messages = [];
+    var focusTarget = null;
+
+    if (!title) {
+      setFieldError('edit-title', 'edit-title-error', '请填写素材标题。');
+      messages.push('请填写素材标题。');
+      focusTarget = byId('edit-title');
+    }
+    if (!author) {
+      setFieldError('edit-author', 'edit-author-error', '请填写作者。');
+      messages.push('请填写作者。');
+      if (!focusTarget) focusTarget = byId('edit-author');
+    }
+    if (!series) {
+      setFieldError('edit-series', 'edit-series-error', '请填写所属系列。');
+      messages.push('请填写所属系列。');
+      if (!focusTarget) focusTarget = byId('edit-series');
+    }
+    if (!intro) {
+      setFieldError('edit-intro', 'edit-intro-error', '请填写素材简介。');
+      messages.push('请填写素材简介。');
+      if (!focusTarget) focusTarget = byId('edit-intro');
+    }
+
+    var views = readEditCount('edit-views', '浏览量');
+    if (views.error) {
+      setFieldError('edit-views', 'edit-views-error', views.error);
+      messages.push(views.error);
+      if (!focusTarget) focusTarget = byId('edit-views');
+    }
+
+    var downloads = readEditCount('edit-downloads', '下载量');
+    if (downloads.error) {
+      setFieldError('edit-downloads', 'edit-downloads-error', downloads.error);
+      messages.push(downloads.error);
+      if (!focusTarget) focusTarget = byId('edit-downloads');
+    }
+
+    if (messages.length) {
+      showEditError(messages.join(' '));
+      if (focusTarget) focusTarget.focus();
+      return;
+    }
+
+    var api = window.HongseFront;
+    if (!api || typeof api.saveMaterialOverride !== 'function' || !editingId) {
+      showEditError('数据服务未加载，请刷新页面后重试。');
+      return;
+    }
+
+    var tags = getEditFieldValue('edit-tags').split(/[,，]/).map(function (tag) {
+      return tag.trim();
+    }).filter(function (tag) {
+      return tag.length > 0;
+    });
+
+    editSaving = true;
+    var submit = byId('edit-submit');
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = '保存中…';
+    }
+
+    var saved = api.saveMaterialOverride(editingId, {
+      title: title,
+      author: author,
+      authorRole: getEditFieldValue('edit-author-role'),
+      location: getEditFieldValue('edit-location'),
+      date: getEditFieldValue('edit-date'),
+      series: series,
+      tags: tags,
+      intro: intro,
+      views: views.value,
+      downloads: downloads.value
+    });
+
+    if (!saved) {
+      editSaving = false;
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = '保存修改';
+      }
+      showEditError('保存失败：本地存储空间不足，请清理浏览器数据后重试。');
+      return;
+    }
+
+    closeEditModal();
+    renderMaterialTable();
+    updateOverviewCards();
+    showAdminToast('素材已更新，首页、详情页与后台展示同步生效。');
+  }
+
+  function bindEditModal() {
+    var modal = byId('edit-modal');
+    var form = byId('edit-form');
+    if (!modal || !form) return;
+
+    var close = byId('edit-close');
+    if (close) close.addEventListener('click', closeEditModal);
+
+    var cancel = byId('edit-cancel');
+    if (cancel) cancel.addEventListener('click', closeEditModal);
+
+    var backdrop = modal.querySelector('[data-close-modal]');
+    if (backdrop) backdrop.addEventListener('click', closeEditModal);
+
+    form.addEventListener('submit', handleEditSubmit);
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !modal.hidden) closeEditModal();
+    });
+  }
+
+  /* ============================================
+     素材表头吸顶
+     表格横向可滚动（.table-wrap 为滚动容器），CSS sticky 无法相对视口生效，
+     因此克隆一份同宽同列的表头固定在导航下方，横向滚动时同步位移。
+     ============================================ */
+  var stickyHeadState = null;
+  var stickyFrame = 0;
+
+  function initStickyTableHead() {
+    var wrap = document.querySelector('.list-panel .table-wrap');
+    var table = wrap ? wrap.querySelector('.list-table') : null;
+    var thead = table && table.tHead ? table.tHead : null;
+    if (!wrap || !table || !thead) return;
+
+    var box = document.createElement('div');
+    box.className = 'sticky-table-head';
+    box.setAttribute('aria-hidden', 'true');
+    box.hidden = true;
+
+    var clone = table.cloneNode(false);
+    clone.removeAttribute('id');
+    clone.className = table.className + ' sticky-head-table';
+    var cloneHead = thead.cloneNode(true);
+    cloneHead.removeAttribute('id');
+    clone.appendChild(cloneHead);
+    box.appendChild(clone);
+    document.body.appendChild(box);
+
+    stickyHeadState = { wrap: wrap, table: table, thead: thead, box: box, clone: clone };
+
+    var schedule = function () {
+      if (stickyFrame) return;
+      stickyFrame = window.requestAnimationFrame(function () {
+        stickyFrame = 0;
+        syncStickyTableHead();
+      });
+    };
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    wrap.addEventListener('scroll', schedule, { passive: true });
+    syncStickyTableHead();
+  }
+
+  function syncStickyTableHead() {
+    var state = stickyHeadState;
+    if (!state) return;
+
+    var nav = document.querySelector('.top-bar');
+    var navBottom = nav ? Math.max(0, nav.getBoundingClientRect().bottom) : 0;
+    var tableRect = state.table.getBoundingClientRect();
+    var headRect = state.thead.getBoundingClientRect();
+    var wrapRect = state.wrap.getBoundingClientRect();
+    var remain = tableRect.bottom - navBottom;
+
+    /* 原表header仍完整可见时不做处理；上缘贴上导航后交给克隆表头，二者当时完全重合 */
+    if (headRect.top > navBottom + 0.5 || remain <= 0.5) {
+      state.box.hidden = true;
+      return;
+    }
+
+    state.box.hidden = false;
+    state.box.style.top = navBottom + 'px';
+    state.box.style.left = wrapRect.left + 'px';
+    state.box.style.width = state.wrap.clientWidth + 'px';
+    /* 表格离开视口时随之被裁掉，不脱离表格区域继续悬挂 */
+    state.box.style.height = Math.min(headRect.height, remain) + 'px';
+    state.clone.style.width = tableRect.width + 'px';
+    state.clone.style.transform = 'translateX(' + (-state.wrap.scrollLeft) + 'px)';
+  }
+
   function initMaterialsPage() {
     restoreFilters();
     renderMaterialTable();
     updateOverviewCards();
     bindMaterialFilters();
     bindUploadModal();
+    bindEditModal();
+    initStickyTableHead();
   }
 
   function refreshAdminData() {

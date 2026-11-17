@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>首页 · 红色文化数字基因库</title>
-  <link rel="stylesheet" href="css/common.css">
-  <link rel="stylesheet" href="css/index.css">
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg">
+  <link rel="stylesheet" href="css/common.css?v=20261117c">
+  <link rel="stylesheet" href="css/index.css?v=20261117c">
+  <link rel="stylesheet" href="css/ai-chat.css?v=20261117e">
 </head>
 <body>
   <!-- 顶部红色实底导航（吸顶） -->
@@ -60,25 +62,31 @@
           </g>
         </svg>
       </div>
-      <h1 id="hero-title" class="hero-title">红色文化数字基因库</h1>
-      <p class="hero-subtitle-main">传承红色基因 赓续精神血脉</p>
+      <div class="hero-heading">
+        <h1 id="hero-title" class="hero-title">红色文化数字基因库</h1>
+        <p class="hero-subtitle-main">传承红色基因 赓续精神血脉</p>
+      </div>
       <p class="hero-subtitle-sub">挖掘红色资源 · 讲好红色故事 · 弘扬红色精神</p>
-      <form id="search-form" class="search-box" role="search" autocomplete="off">
-        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="7"></circle>
-          <path d="m16.5 16.5 4 4"></path>
-        </svg>
-        <input id="search-input" class="search-input" type="search"
-               placeholder="检索标题、简介、标签、系列、地点、供稿人……" aria-label="检索素材">
-        <button id="search-btn" class="btn btn-red" type="submit">搜索素材</button>
-      </form>
+      <div id="search-dock" class="search-dock">
+        <form id="search-form" class="search-box" role="search" autocomplete="off">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m16.5 16.5 4 4"></path>
+          </svg>
+          <input id="search-input" class="search-input" type="search"
+                 placeholder="搜索标题、标签、地点…" aria-label="检索素材">
+          <button id="search-btn" class="btn btn-red" type="submit">搜索素材</button>
+        </form>
+      </div>
+      <div id="search-dock-spacer" class="search-dock-spacer" aria-hidden="true"></div>
     </section>
 
     <!-- 热度 TOP5 分层展示 -->
-    <section class="top5-section" aria-labelledby="top5-title">
-      <div class="section-head">
-        <h2 id="top5-title">馆藏热度 TOP5</h2>
+    <section id="top5-section" class="top5-section" aria-labelledby="top5-title">
+      <div class="section-head top5-head">
+        <h2 id="top5-title" class="top5-head-title">馆藏热度<span class="top5-head-tag">TOP5</span></h2>
+        <a class="top5-head-more" href="#material-grid">查看全部<span class="top5-head-arrow" aria-hidden="true">›</span></a>
       </div>
       <div id="top5-layout" class="top5-layout" aria-live="polite">
         <div class="top5-side" id="top5-left"></div>
@@ -223,8 +231,69 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+  <!-- AI 助手 -->
+  <div id="ai-widget" class="ai-widget">
+    <button id="ai-launch" class="ai-launch" type="button" aria-label="打开 AI 助手" aria-expanded="false" aria-controls="ai-panel">
+      <span class="ai-launch-glow" aria-hidden="true"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H7l-3.5 2v-5.2A8.5 8.5 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5Z"/>
+        <path d="M8.5 10.5h.01M12.5 10.5h.01M16.5 10.5h.01"/>
+      </svg>
+      <span class="ai-launch-text">AI 助手</span>
+    </button>
+
+    <section id="ai-panel" class="ai-panel" aria-label="AI 助手对话" hidden>
+      <header class="ai-panel-head">
+        <div class="ai-identity">
+          <span class="ai-avatar" aria-hidden="true">★</span>
+          <div>
+            <p class="ai-name">红色基因 AI 助手</p>
+            <p class="ai-status"><i aria-hidden="true"></i><span id="ai-status-text">在线 · 站内检索</span></p>
+          </div>
+        </div>
+        <div class="ai-tools">
+          <button id="ai-settings-toggle" class="ai-settings-toggle" type="button"
+                  aria-label="设置 DeepSeek API Key" aria-expanded="false" aria-controls="ai-settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.2"/>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.17.61.68 1.06 1.31 1.09H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51.91Z"/>
+            </svg>
+          </button>
+          <button id="ai-close" class="ai-close" type="button" aria-label="收起 AI 助手">×</button>
+        </div>
+      </header>
+
+      <div id="ai-settings" class="ai-settings" hidden>
+        <label class="ai-settings-label" for="ai-key-input">DeepSeek API Key（仅保存在本机浏览器）</label>
+        <div class="ai-key-row">
+          <input id="ai-key-input" class="ai-key-input" type="password" placeholder="粘贴 sk- 开头的 Key"
+                 autocomplete="off" spellcheck="false" aria-label="DeepSeek API Key">
+          <button id="ai-key-save" class="ai-key-btn is-primary" type="button">保存</button>
+          <button id="ai-key-clear" class="ai-key-btn" type="button">清除</button>
+        </div>
+        <p class="ai-key-state" id="ai-key-state">未配置 · 当前使用站内关键词应答</p>
+        <p class="ai-key-hint">Key 只写入 localStorage，不会出现在页面代码或配置文件中；配置后可直连 DeepSeek，失败会自动退回站内检索。</p>
+      </div>
+
+      <div id="ai-messages" class="ai-messages" role="log" aria-live="polite"></div>
+
+      <div id="ai-quick" class="ai-quick" aria-label="快捷提问">
+        <button class="ai-quick-btn" type="button" data-prompt="推荐长征主题素材">长征主题</button>
+        <button class="ai-quick-btn" type="button" data-prompt="有哪些毛泽东相关音频">毛泽东音频</button>
+        <button class="ai-quick-btn" type="button" data-prompt="当前热门素材有哪些">热门素材</button>
+      </div>
+
+      <form id="ai-form" class="ai-form" autocomplete="off">
+        <input id="ai-input" class="ai-input" type="text" maxlength="80"
+               placeholder="问问长征、毛泽东相关素材…" aria-label="向 AI 助手提问">
+        <button class="ai-send" type="submit">发送</button>
+      </form>
+    </section>
+  </div>
+
   <script src="js/data.js"></script>
   <script src="js/front-common.js"></script>
   <script src="js/index.js"></script>
+  <script src="js/ai-chat.js?v=20261117e"></script>
 </body>
 </html>
